@@ -2,15 +2,23 @@
 
 Cordova plugin for [Star micronics printers](http://www.starmicronics.com/printer/home.aspx)
 
-How to use:
+This plugin defines global cordova.starprnt object.
+
+Although in the global scope, it is not available until after the deviceready event.
+```
+document.addEventListener("deviceready", onDeviceReady, false);
+function onDeviceReady() {
+    console.log(cordova.starprnt);
+}
+```
+
+## Install
 
 Install using `cordova plugin add https://github.com/auctifera-josed/starprnt`
 
-This is based on the work from the guys at [InteractiveObject](https://github.com/InteractiveObject/StarIOPlugin)
-
 ## API
 
-var printer = window.starprnt;
+`var printer = cordova.starprnt;//window.starprnt, cordova.plugins.starprnt`
 
 ### Port/Printer discovery
 
@@ -115,6 +123,8 @@ printer.printReceipt('BT:9100',
 	'A'
 );
 ``` 
+
+**Note:** This is based on the work from the guys at [InteractiveObject](https://github.com/InteractiveObject/StarIOPlugin)
 
 
 

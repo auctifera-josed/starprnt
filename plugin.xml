@@ -12,6 +12,7 @@
 	<js-module name="StarPRNT" src="www/StarPRNT.js">
 		<clobbers target="cordova.plugins.starprnt" />
 		<clobbers target="starprnt" />
+		<clobbers target="cordova.starprnt" />
 	</js-module>
 
 	<platform name="ios">
