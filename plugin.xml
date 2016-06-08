@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin id="cordova-plugin-starprnt" version="0.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+	<name>StarPRNT</name>
+	<description>Plugin to use Star printers</description>
+	<author>Jose Angarita</author>
+	<keywords>print,star,star printer</keywords>
+	<license>MIT</license>
+	<engines>
+    <engine name="cordova" version=">=3.4.0"/>
+  </engines>
+
+	<js-module name="StarPRNT" src="www/StarPRNT.js">
+		<clobbers target="cordova.plugins.starprnt" />
+		<clobbers target="starprnt" />
+	</js-module>
+
+	<platform name="ios">
+		<config-file target="config.xml" parent="/*">
+			<feature name="StarPRNT">
+				<param name="ios-package" value="StarPRNT" />
+			</feature>
+		</config-file>
+		<config-file target="*-Info.plist" parent="UISupportedExternalAccessoryProtocols">
+	    <array>
+        <string>jp.star-m.starpro</string>
+	    </array>
+		</config-file>
+		<header-file src="src/ios/Communication.h" />
+		<source-file src="src/ios/Communication.m" />
+		<header-file src="src/ios/StarPRNT.h" />
+		<source-file src="src/ios/StarPRNT.m" />
+	</platform>
+
+	<framework src="./frameworks/StarIO.framework" custom="true"/>
+	<framework src="./frameworks/StarIO_Extension.framework" custom="true"/>
+	<framework src="CoreBluetooth.framework"/>
+	<framework src="ExternalAccessory.framework"/>
+</plugin>
