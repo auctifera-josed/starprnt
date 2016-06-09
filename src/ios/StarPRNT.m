@@ -77,13 +77,13 @@ static NSString *dataCallbackId = nil;
 
 - (void)printReceipt:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
-        NSLog(@"Ext Manager: %@",_starIoExtManager);
         StarIoExtEmulation emulation = StarIoExtEmulationStarLine;
         SCBAlignmentPosition alignment = SCBAlignmentPositionCenter;
         SCBInternationalType international = SCBInternationalTypeUSA;
         SCBFontStyleType fontStyle = SCBFontStyleTypeA;
         BOOL printResult = false;
-        
+        NSStringEncoding encoding = NSWindowsCP1252StringEncoding;
+    
         NSMutableData *commands = [NSMutableData data];
         NSString *portName = nil;
         NSString *content = nil;
@@ -135,16 +135,16 @@ static NSString *dataCallbackId = nil;
             }
         }
         
-        NSData *data = [content dataUsingEncoding:NSUTF8StringEncoding];
+        NSData *data = [content dataUsingEncoding:encoding];
 
         NSError * error = nil;
         id receipt = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         if (!receipt) { //Not JSON, printing data
             [builder beginDocument];
-
+            [builder appendCodePage:SCBCodePageTypeCP1252];
+            [builder appendInternational:international];
             [builder appendAlignment:alignment];
             [builder appendFontStyle:fontStyle];
-            [builder appendInternational:international];
             [builder appendData:data];
             [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
         
