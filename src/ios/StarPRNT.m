@@ -87,6 +87,7 @@ static NSString *dataCallbackId = nil;
         NSMutableData *commands = [NSMutableData data];
         NSString *portName = nil;
         NSString *content = nil;
+        NSString *receiptid = nil;
         SMPort *port = nil;
         ISCBBuilder *builder = [StarIoExt createCommandBuilder:emulation];
         
@@ -104,10 +105,11 @@ static NSString *dataCallbackId = nil;
         if (command.arguments.count > 0) {
             portName = [command.arguments objectAtIndex:0];
             content = [command.arguments objectAtIndex:1];
+            receiptid = [command.arguments objectAtIndex:2];
             //Alignment
-            NSString *align = [command.arguments objectAtIndex:2];
-            NSString *intern = [command.arguments objectAtIndex:3];
-            NSString *font = [command.arguments objectAtIndex:4];
+            NSString *align = [command.arguments objectAtIndex:3];
+            NSString *intern = [command.arguments objectAtIndex:4];
+            NSString *font = [command.arguments objectAtIndex:5];
 
             if (align != nil && align != (id)[NSNull null]){
                 if ([align isEqualToString:@"left"])
@@ -146,6 +148,8 @@ static NSString *dataCallbackId = nil;
             [builder appendAlignment:alignment];
             [builder appendFontStyle:fontStyle];
             [builder appendData:data];
+            [builder appendUnitFeed:32];
+            [builder appendQrCodeDataWithAlignment:[receiptid dataUsingEncoding:encoding] model:SCBQrCodeModelNo2 level:SCBQrCodeLevelQ cell:6 position:SCBAlignmentPositionCenter];
             [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
         
             [builder endDocument];

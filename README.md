@@ -52,6 +52,7 @@ printer.printReceipt('BT:9100',
 	function(res){
 		console.log(res);
 	},
+	'12345'
 	'left',
 	'US',
 	'A'
@@ -93,7 +94,7 @@ The connect function allows to 'connect' to the printer, to keep alive the conne
 ### Print receipt
 
 #### Syntax
-`printReceipt(port, receipt, success, error, [alignment, international, font])`
+`printReceipt(port, receipt, success, error, [receiptId, alignment, international, font])`
 
 #### Parameters
 
@@ -105,6 +106,9 @@ The text to be printed. e.g. "Star Clothing Boutique\n123 Star Road\nCity, State
 
 ##### success*/error*
 callbacks
+
+##### receiptId
+Text to be printed as QR code at the end of the receipt
 
 ##### alignment (optional)
 Alignment of the text, options are:

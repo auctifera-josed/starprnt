@@ -1,7 +1,7 @@
 var exec = require('cordova/exec');
 
-exports.printReceipt = function(port, receipt, success, error, alignment, international, font) {
-    exec(success, error, "StarPRNT", "printReceipt", [port, receipt, alignment, international, font]);
+exports.printReceipt = function(port, receipt, success, error, receiptId, alignment, international, font) {
+    exec(success, error, "StarPRNT", "printReceipt", [port, receipt, receiptId, alignment, international, font]);
 };
 
 exports.portDiscovery = function(type, success, error) {
