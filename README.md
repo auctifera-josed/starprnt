@@ -62,7 +62,7 @@ printer.printReceipt('BT:9100',
 ## API
 
 ### Port/Printer discovery
-The `portDiscovery` function gets a list of ports where star printers are currently connected.
+The `portDiscovery(type, success, error)` function gets a list of ports where star printers are currently connected.
 `portDiscovery(type,success,error)`
 
 #### type*
@@ -83,8 +83,13 @@ The port of the printer. e.g. BT:9100
 callback
 
 ### Print formatted receipt
-The `printFormattedReceipt` function allows to print a receipt on a predefined format with 3 sections (header, body and footer), each section with multiple **optional** parameters.
+The `printFormattedReceipt(port, receipt, success, error)` function allows to print a receipt on a predefined format with 3 sections (header, body and footer), each section with multiple **optional** parameters.
 
+#### port*
+The port of the printer. e.g. BT:9100
+
+#### receipt*
+The formatted (as JSON) receipt as follows:
 Parameters:
 
 1. International: Sets the international for the entire receipt, options are:
@@ -156,9 +161,11 @@ Parameters:
   }
 }
 ```
+#### success*/error*
+callbacks
 
 ### Print receipt
-The `printReceipt` function allows to print a given text to the printer connected at the given port, it supports the customization of alignment, international chars and font style. 
+The `printReceipt(port, receipt, success, error, receiptId, alignment, international, font)` function allows to print a given text to the printer connected at the given port, it supports the customization of alignment, international chars and font style. 
 `printReceipt(port, receipt, success, error, [receiptId, alignment, international, font])`
 
 #### port*
