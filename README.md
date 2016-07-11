@@ -86,6 +86,7 @@ callback
 The `printFormattedReceipt` function allows to print a receipt on a predefined format with 3 sections (header, body and footer), each section with multiple **optional** parameters.
 
 Parameters:
+
 1. International: Sets the international for the entire receipt, options are:
   - US
   - FR
