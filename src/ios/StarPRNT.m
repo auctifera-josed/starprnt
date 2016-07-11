@@ -75,7 +75,7 @@ static NSString *dataCallbackId = nil;
     }];
 }
 
-- (void)printReceipt:(CDVInvokedUrlCommand *)command {
+- (void)printData:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
         StarIoExtEmulation emulation = StarIoExtEmulationStarLine;
         SCBAlignmentPosition alignment = SCBAlignmentPositionCenter;
@@ -106,59 +106,230 @@ static NSString *dataCallbackId = nil;
             portName = [command.arguments objectAtIndex:0];
             content = [command.arguments objectAtIndex:1];
             receiptid = [command.arguments objectAtIndex:2];
-            //Alignment
-            NSString *align = [command.arguments objectAtIndex:3];
-            NSString *intern = [command.arguments objectAtIndex:4];
-            NSString *font = [command.arguments objectAtIndex:5];
-
-            if (align != nil && align != (id)[NSNull null]){
-                if ([align isEqualToString:@"left"])
-                    alignment = SCBAlignmentPositionLeft;
-                else if ([align isEqualToString:@"center"])
-                    alignment = SCBAlignmentPositionCenter;
-                else if ([align isEqualToString:@"right"])
-                    alignment = SCBAlignmentPositionRight;
-            }
-            //international
-            if (intern != nil && intern != (id)[NSNull null]){
-                if ([intern isEqualToString:@"US"])
-                    international = SCBInternationalTypeUSA;
-                else if ([intern isEqualToString:@"FR"])
-                    international = SCBInternationalTypeFrance;
-                else if ([intern isEqualToString:@"UK"])
-                    international = SCBInternationalTypeUK;
-            }
-            //font
-            if (font != nil && font != (id)[NSNull null]){
-                if ([font isEqualToString:@"A"])
-                    fontStyle = SCBFontStyleTypeA;
-                else if ([font isEqualToString:@"B"])
-                    fontStyle = SCBFontStyleTypeB;
-            }
+            alignment = [self getAlignment:[command.arguments objectAtIndex:3]];
+            international = [self getInternational:[command.arguments objectAtIndex:4]];
+            fontStyle = [self getFont:[command.arguments objectAtIndex:5]];
         }
         
-        NSData *data = [content dataUsingEncoding:encoding];
+        [builder beginDocument];
+        [builder appendCodePage:SCBCodePageTypeCP1252];
+        [builder appendInternational:international];
+        [builder appendAlignment:alignment];
+        [builder appendFontStyle:fontStyle];
+        [builder appendData:[content dataUsingEncoding:encoding]];
+        [builder appendUnitFeed:32];
+        if (receiptid != nil && receiptid != (id)[NSNull null])
+            [builder appendQrCodeDataWithAlignment:[receiptid dataUsingEncoding:encoding] model:SCBQrCodeModelNo2 level:SCBQrCodeLevelQ cell:6 position:SCBAlignmentPositionCenter];
+        [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
+        [builder endDocument];
 
-        NSError * error = nil;
-        id receipt = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-        if (!receipt) { //Not JSON, printing data
+        commands = [builder.commands copy];
+        
+        if (commands != nil && port != nil) {
+            [_starIoExtManager.lock lock];
+            
+            printResult = [Communication sendCommands:commands port:port];
+            
+            [_starIoExtManager.lock unlock];
+        }
+        
+        CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:printResult];
+        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+    }];
+}
+
+- (void)printReceipt:(CDVInvokedUrlCommand *)command {
+    [self.commandDelegate runInBackground:^{
+        StarIoExtEmulation emulation = StarIoExtEmulationStarLine;
+        BOOL printResult = false;
+        NSStringEncoding encoding = NSWindowsCP1252StringEncoding;
+    
+        NSMutableData *commands = [NSMutableData data];
+        NSString *portName = nil;
+        NSString *content = nil;
+        SMPort *port = nil;
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:emulation];
+        
+        if (_starIoExtManager == nil) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Not connected" message:@"Please connect to the printer before printing out." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                [alertView show];
+            });
+        } else if (_starIoExtManager.port == nil){
+            port = [SMPort getPort:portName :@"" :10000];
+        } else {
+            port = [_starIoExtManager port];
+        }
+
+        if (command.arguments.count > 0) {
+            portName = [command.arguments objectAtIndex:0];
+            content = [command.arguments objectAtIndex:1];
+        }
+        
+        // NSError * error = nil;
+        id receipt = [NSJSONSerialization JSONObjectWithData:[content dataUsingEncoding:encoding] options:0 error:nil];
+        if (receipt) { //JSON
+            unsigned char setHorizontalTab[] = {0x1b, 0x44, 0x7, 0x29, 0x00};
+            unsigned char twoTabs[] = {0x09, 0x09};
+            
+            NSDictionary    *main = receipt,
+                            *header = main[@"header"],
+                            *body = main[@"body"],
+                            *footer = main[@"footer"],
+                            *notice = footer[@"notice"];
+            NSString    *company_name = header[@"company_name"],
+                        *company_street = header[@"company_street"],
+                        *company_country = header[@"company_country"],
+                        *seller = header[@"seller"],
+                        *date = header[@"date"],
+                        *time = header[@"time"],
+                        *phone = footer[@"phone"],
+                        *fax = footer[@"fax"],
+                        *email = footer[@"email"],
+                        *transaction_id = main[@"transaction_id"];
+            int     descriptionMaxSize = 30;
+            
             [builder beginDocument];
             [builder appendCodePage:SCBCodePageTypeCP1252];
-            [builder appendInternational:international];
-            [builder appendAlignment:alignment];
-            [builder appendFontStyle:fontStyle];
-            [builder appendData:data];
-            [builder appendUnitFeed:32];
-            [builder appendQrCodeDataWithAlignment:[receiptid dataUsingEncoding:encoding] model:SCBQrCodeModelNo2 level:SCBQrCodeLevelQ cell:6 position:SCBAlignmentPositionCenter];
-            [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
-        
-            [builder endDocument];
-        }else {//getting JSON
-            NSDictionary *results = receipt;
-
-            for (id key in results){
-                NSLog(@"key=%@ value=%@", key, [results objectForKey:key]);
+            [builder appendInternational:[self getInternational:main[@"international"]]];
+            [builder appendAlignment:[self getAlignment:header[@"alignment"]]];
+            [builder appendFontStyle:[self getFont:main[@"font"]]];
+            //Start header
+            if (company_name != nil && company_name != (id)[NSNull null]){
+                [builder appendDataWithMultiple:[company_name dataUsingEncoding:encoding] width:2 height:2];
+                [builder appendLineFeed:1];
             }
+            if (company_street != nil && company_street != (id)[NSNull null]){
+                [builder appendData:[company_street dataUsingEncoding:encoding]];
+                [builder appendLineFeed:1];
+            }
+            if (company_country != nil && company_country != (id)[NSNull null]){
+                [builder appendData:[company_country dataUsingEncoding:encoding]];
+                [builder appendLineFeed:1];
+            }
+            [builder appendLineFeed:1];
+            if (seller != nil && seller != (id)[NSNull null]){
+                [builder appendData:[seller dataUsingEncoding:encoding]];
+                [builder appendLineFeed:1];
+            }
+            [builder appendAlignment:SCBAlignmentPositionLeft];
+            if (date != nil && date != (id)[NSNull null]){
+                [builder appendData:[date dataUsingEncoding:encoding]];
+                if (time != nil && time != (id)[NSNull null]){
+                    [builder appendData:[@"                                 " dataUsingEncoding:encoding]];
+                    [builder appendData:[time dataUsingEncoding:encoding]];
+                    [builder appendLineFeed:1];
+                }
+            }
+            if ([header[@"divider"] intValue] == 1){
+                [builder appendData:[@"------------------------------------------------" dataUsingEncoding:encoding]];
+                [builder appendLineFeed:1];
+            }
+            //Start body
+            [builder appendBytes:setHorizontalTab length:sizeof(setHorizontalTab)];
+            [builder appendData:[@"Qty." dataUsingEncoding:encoding]];
+            [builder appendByte:0x09];
+            [builder appendData:[@"Description" dataUsingEncoding:encoding]];
+            [builder appendByte:0x09];
+            [builder appendData:[@"Amount" dataUsingEncoding:encoding]];
+            [builder appendLineFeed:1];
+             
+            for (NSDictionary *product in (NSArray *) body[@"product_list"]){
+                if (product[@"quantity"] != nil && product[@"quantity"] != (id)[NSNull null] && product[@"description"] != nil && product[@"description"] != (id)[NSNull null] && product[@"amount"] != nil && product[@"amount"] != (id)[NSNull null]){
+                    [builder appendData:[[NSString stringWithFormat:@"%@", product[@"quantity"]]  dataUsingEncoding:encoding]];
+                    //dividing description in substrings to write in multiple lines
+                    NSString *description = product[@"description"];
+                    NSUInteger descLength = [description length];
+                    // NSMutableArray *descriptionAsList = [[NSMutableArray alloc] init];
+                    if (descLength > descriptionMaxSize){
+                        int cont = 1,
+                        location = 0;
+                        do {
+                            [builder appendByte:0x09];
+                            [builder appendData:[[description substringWithRange:NSMakeRange(location, descriptionMaxSize)] dataUsingEncoding:encoding]];
+                            if (cont == 1){
+                                [builder appendByte:0x09];
+                                [builder appendData:[[NSString stringWithFormat:@"%@", product[@"amount"]] dataUsingEncoding:encoding]];
+                            }
+                            [builder appendLineFeed:1];
+                            cont++;
+                            location += descriptionMaxSize;
+                        } while (cont <= descLength / descriptionMaxSize);
+                        if (descLength % descriptionMaxSize != 0){
+                            [builder appendByte:0x09];
+                            [builder appendData:[[description substringFromIndex:location] dataUsingEncoding:encoding]]; 
+                        }
+                    } else {
+                        [builder appendByte:0x09];
+                        [builder appendData:[description dataUsingEncoding:encoding]];
+                        [builder appendByte:0x09];
+                        [builder appendData:[[NSString stringWithFormat:@"%@", product[@"amount"]] dataUsingEncoding:encoding]];  
+                    }
+                    [builder appendLineFeed:1];
+                }
+            }
+            [builder appendLineFeed:1];
+            [builder appendData:[@"Subtotal" dataUsingEncoding:encoding]];
+            [builder appendBytes:twoTabs length:sizeof(twoTabs)];
+            [builder appendData:[body[@"subtotal"] dataUsingEncoding:encoding]];
+            [builder appendLineFeed:1];
+            [builder appendData:[@"Tax" dataUsingEncoding:encoding]];
+            [builder appendBytes:twoTabs length:sizeof(twoTabs)];
+            [builder appendData:[body[@"tax"] dataUsingEncoding:encoding]];
+            [builder appendLineFeed:1];
+            [builder appendData:[@"Total" dataUsingEncoding:encoding]];
+            unsigned char setHorizontalTab2[] = {0x1b, 0x44, 0x7, 0x22, 0x00};
+            [builder appendBytes:setHorizontalTab2 length:sizeof(setHorizontalTab2)];
+            [builder appendBytes:twoTabs length:sizeof(twoTabs)];
+            [builder appendDataWithMultiple:[body[@"total"] dataUsingEncoding:encoding] width:2 height:2];
+            [builder appendLineFeed:1];
+            if ([body[@"divider"] intValue] == 1){
+                [builder appendData:[@"------------------------------------------------" dataUsingEncoding:encoding]];
+                [builder appendLineFeed:1];
+            }
+            [builder appendAlignment:[self getAlignment:footer[@"alignment"]]];
+            [builder appendUnitFeed:32];
+            //Start footer
+            if (phone != nil && phone != (id)[NSNull null]){
+                [builder appendData:[@"Tel. " dataUsingEncoding:encoding]];
+                [builder appendData:[phone dataUsingEncoding:encoding]];
+                [builder appendLineFeed:1];
+            }
+            if (fax != nil && fax != (id)[NSNull null]){
+                [builder appendData:[@"Fax. " dataUsingEncoding:encoding]];
+                [builder appendData:[fax dataUsingEncoding:encoding]];
+                [builder appendLineFeed:1];
+            }
+            if (email != nil && email != (id)[NSNull null]){
+                [builder appendData:[@"Email. " dataUsingEncoding:encoding]];
+                [builder appendData:[email dataUsingEncoding:encoding]];
+                [builder appendLineFeed:1];
+            }
+            [builder appendLineFeed:1];
+            if (notice != nil && notice != (id)[NSNull null]){
+                if ([notice[@"invert"] intValue] == 1)     
+                    [builder appendDataWithInvert:[notice[@"title"] dataUsingEncoding:encoding]];
+                else
+                    [builder appendData:[notice[@"title"] dataUsingEncoding:encoding]];
+                [builder appendLineFeed:1];
+                [builder appendData:[notice[@"text"] dataUsingEncoding:encoding]];
+            }
+            [builder appendLineFeed:2];
+            if (transaction_id != nil && transaction_id != (id)[NSNull null]){
+                NSLog(@"transaction_id: %@", transaction_id);
+                if ([main[@"barcode"] intValue] == 1)
+                    [builder appendBarcodeDataWithAlignment:[transaction_id dataUsingEncoding:encoding] symbology:SCBBarcodeSymbologyCode39 width:SCBBarcodeWidthMode1 height:40 hri:YES position:SCBAlignmentPositionCenter];
+                else
+                    [builder appendData:[transaction_id dataUsingEncoding:encoding]];
+            }
+            [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
+            [builder endDocument];
+        } else {
+            [builder beginDocument];
+            [builder appendData:[@"The given string isn't formatted correctly (JSON)" dataUsingEncoding:encoding]];
+            [builder appendLineFeed:1];
+            [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
+            [builder endDocument];
         }
 
         commands = [builder.commands copy];
@@ -210,6 +381,47 @@ static NSString *dataCallbackId = nil;
 }
 
 //Utilities
+
+- (SCBAlignmentPosition)getAlignment:(NSString *)alignment {
+    if (alignment != nil && alignment != (id)[NSNull null]){
+        if ([alignment isEqualToString:@"left"])
+            return SCBAlignmentPositionLeft;
+        else if ([alignment isEqualToString:@"center"])
+            return SCBAlignmentPositionCenter;
+        else if ([alignment isEqualToString:@"right"])
+           return SCBAlignmentPositionRight;
+        else 
+            return SCBAlignmentPositionCenter;
+    } else {
+        return SCBAlignmentPositionCenter;
+    }
+}
+
+- (SCBInternationalType)getInternational:(NSString *)internationl {
+    if (internationl != nil && internationl != (id)[NSNull null]){
+        if ([internationl isEqualToString:@"US"])
+            return SCBInternationalTypeUSA;
+        else if ([internationl isEqualToString:@"FR"])
+            return SCBInternationalTypeFrance;
+        else if ([internationl isEqualToString:@"UK"])
+            return SCBInternationalTypeUK;
+        else
+            return SCBInternationalTypeUSA;
+    } else
+        return SCBInternationalTypeUSA;
+}
+
+- (SCBFontStyleType)getFont:(NSString *)font {
+    if (font != nil && font != (id)[NSNull null]){
+        if ([font isEqualToString:@"A"])
+            return SCBFontStyleTypeA;
+        else if ([font isEqualToString:@"B"])
+            return SCBFontStyleTypeB;
+        else
+            return SCBFontStyleTypeA;
+    } else
+        return SCBFontStyleTypeA;
+}
 
 - (NSMutableDictionary*)portInfoToDictionary:(PortInfo *)portInfo {
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
