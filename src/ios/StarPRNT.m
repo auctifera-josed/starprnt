@@ -167,7 +167,7 @@ static NSString *dataCallbackId = nil;
         }
         
         // NSError * error = nil;
-        id receipt = [NSJSONSerialization JSONObjectWithData:[content dataUsingEncoding:encoding] options:0 error:nil];
+        id receipt = [NSJSONSerialization JSONObjectWithData:[content dataUsingEncoding:NSUTF8StringEncoding] options:0 error:nil];
         if (receipt) { //JSON
             unsigned char setHorizontalTab[] = {0x1b, 0x44, 0x7, 0x29, 0x00};
             unsigned char twoTabs[] = {0x09, 0x09};
@@ -316,7 +316,6 @@ static NSString *dataCallbackId = nil;
             }
             [builder appendLineFeed:2];
             if (transaction_id != nil && transaction_id != (id)[NSNull null]){
-                NSLog(@"transaction_id: %@", transaction_id);
                 if ([main[@"barcode"] intValue] == 1)
                     [builder appendBarcodeDataWithAlignment:[transaction_id dataUsingEncoding:encoding] symbology:SCBBarcodeSymbologyCode39 width:SCBBarcodeWidthMode1 height:40 hri:YES position:SCBAlignmentPositionCenter];
                 else
@@ -326,7 +325,7 @@ static NSString *dataCallbackId = nil;
             [builder endDocument];
         } else {
             [builder beginDocument];
-            [builder appendData:[@"The given string isn't formatted correctly (JSON)" dataUsingEncoding:encoding]];
+            [builder appendData:[@"The given string isn't formatted correctly\nRemember to send a JSON with JSON.stringify()" dataUsingEncoding:encoding]];
             [builder appendLineFeed:1];
             [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
             [builder endDocument];

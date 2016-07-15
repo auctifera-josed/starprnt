@@ -83,14 +83,13 @@ The port of the printer. e.g. BT:9100
 callback
 
 ### Print formatted receipt
-The `printFormattedReceipt(port, receipt, success, error)` function allows to print a receipt on a predefined format with 3 sections (header, body and footer), each section with multiple **optional** parameters.
+The `printFormattedReceipt(port, JSON.stringify(receipt), success, error)` function allows to print a receipt on a predefined format with 3 sections (header, body and footer), each section with multiple **optional** parameters.
 
 #### port*
 The port of the printer. e.g. BT:9100
 
-#### receipt*
+#### receipt* **Remember to send it as a string with JSON.stringify()**
 The formatted (as JSON) receipt as follows:
-Parameters:
 
 1. International: Sets the international for the entire receipt, options are:
   - US
@@ -105,10 +104,10 @@ Parameters:
 6. divider: If true, a dashed divider will be shown below the section
 7. alignment: can be set separately for header, body and footer 
 8. header
-  8. date: Needs to be exactly of length 10
-  8. time: Needs to be exactly of length 5
+  8. date: Needs to be exactly of length 10 to display correctly
+  8. time: Needs to be exactly of length 5 to display correctly
 9. body
-  9. product_list: An array of objects, all fields (quantity, description, amount) are required in order to display an item
+  9. product_list: An array of objects, all children's fields (quantity, description, amount) are required in order to display an item
 10. footer
   10. notice
     10. invert: If true, the title will be shown with black background and white letters (inverted)
