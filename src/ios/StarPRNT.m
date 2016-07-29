@@ -346,6 +346,126 @@ static NSString *dataCallbackId = nil;
     }];
 }
 
+- (void)setBlackMarkSensor:(CDVInvokedUrlCommand *)command {
+    [self.commandDelegate runInBackground:^{
+        StarIoExtEmulation emulation = StarIoExtEmulationStarLine;
+        BOOL printResult = false;
+        
+        NSMutableData *commands = [NSMutableData data];
+        NSString *portName = nil;
+        SMPort *port = nil;
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:emulation];
+        
+        if (_starIoExtManager.port == nil){
+            port = [SMPort getPort:portName :@"" :10000];
+        } else {
+            port = [_starIoExtManager port];
+        }
+        unsigned char setBlackMarkSensor[] = {0x1B, 0x1D, 0x23, 0x2B, 0x31, 0x31, 0x30, 0x30, 0x30, 0x0A, 0x00};
+            
+        [builder appendBytes:setBlackMarkSensor length:sizeof(setBlackMarkSensor)];
+        
+        commands = [builder.commands copy];
+        
+        if (command.arguments.count > 0) {
+            portName = [command.arguments objectAtIndex:0];
+        }
+
+        if (commands != nil && port != nil) {
+            [_starIoExtManager.lock lock];
+            
+            printResult = [Communication sendCommands:commands port:port];
+            
+            [_starIoExtManager.lock unlock];
+        }
+
+        CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:printResult];
+        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+    }];
+}
+
+- (void)clearBlackMarkSensor:(CDVInvokedUrlCommand *)command {
+    [self.commandDelegate runInBackground:^{
+        StarIoExtEmulation emulation = StarIoExtEmulationStarLine;
+        BOOL printResult = false;
+        
+        NSMutableData *commands = [NSMutableData data];
+        NSString *portName = nil;
+        SMPort *port = nil;
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:emulation];
+        
+        if (_starIoExtManager == nil) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Not connected" message:@"Please connect to the printer before sending commands." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                [alertView show];
+            });
+        } else if (_starIoExtManager.port == nil){
+            port = [SMPort getPort:portName :@"" :10000];
+        } else {
+            port = [_starIoExtManager port];
+        }
+
+        unsigned char setBlackMarkSensor[] = {0x1b, 0x1D, 0x23, 0x2D, 0x31, 0x31, 0x30, 0x30, 0x30, 0x0A, 0x00};
+            
+        [builder beginDocument];
+        [builder appendBytes:setBlackMarkSensor length:sizeof(setBlackMarkSensor)];
+        [builder endDocument];
+
+        commands = [builder.commands copy];
+        
+        if (command.arguments.count > 0) {
+            portName = [command.arguments objectAtIndex:0];
+        }
+
+        if (commands != nil && port != nil) {
+            [_starIoExtManager.lock lock];
+            
+            printResult = [Communication sendCommands:commands port:port];
+            
+            [_starIoExtManager.lock unlock];
+        }
+
+        CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:printResult];
+        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+    }];
+}
+
+// [self.commandDelegate runInBackground:^{
+//     StarIoExtEmulation emulation = StarIoExtEmulationStarLine;
+//     BOOL printResult = false;
+    
+//     NSMutableData *commands = [NSMutableData data];
+//     NSString *portName = nil;
+//     SMPort *port = nil;
+//     ISCBBuilder *builder = [StarIoExt createCommandBuilder:emulation];
+    
+//     if (_starIoExtManager == nil) {
+//         dispatch_async(dispatch_get_main_queue(), ^{
+//             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Not connected" message:@"Please connect to the printer before sending commands." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+//             [alertView show];
+//         });
+//     } else if (_starIoExtManager.port == nil){
+//         port = [SMPort getPort:portName :@"" :10000];
+//     } else {
+//         port = [_starIoExtManager port];
+//     }
+
+//     if (command.arguments.count > 0) {
+//         portName = [command.arguments objectAtIndex:0];
+//     }
+
+//     if (commands != nil && port != nil) {
+//         [_starIoExtManager.lock lock];
+        
+//         printResult = [Communication sendCommands:commands port:port];
+        
+//         [_starIoExtManager.lock unlock];
+//     }
+
+//     CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:printResult];
+//     [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+// }];
+
 //Printer events
 -(void)didPrinterCoverOpen {
     [self sendData:@"printerCoverOpen" data:nil];

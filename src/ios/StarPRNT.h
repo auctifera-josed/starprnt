@@ -22,6 +22,8 @@
 - (void)portDiscovery:(CDVInvokedUrlCommand *)command;
 - (void)printData:(CDVInvokedUrlCommand *)command;
 - (void)printReceipt:(CDVInvokedUrlCommand *)command;
+- (void)setBlackMarkSensor:(CDVInvokedUrlCommand *)command;
+- (void)clearBlackMarkSensor:(CDVInvokedUrlCommand *)command;
 - (void)connect:(CDVInvokedUrlCommand *)command;
 
 @end
