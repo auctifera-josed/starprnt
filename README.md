@@ -115,7 +115,7 @@ The formatted (as JSON) receipt as follows:
 ```javascript
 {
   "international": "EN",
-  "paper_inches": 3,
+  "paper_inches": 3, //For future development
   "transaction_id": "P-1235667",
   "barcode": true,
   "font": "A",
@@ -163,8 +163,49 @@ The formatted (as JSON) receipt as follows:
 #### success*/error*
 callbacks
 
+### Print ticket
+The `printTicket(port, ticket, success, error)` function allows to print a given ticket previously formatted, it has two sections (main, removable) it supports some customizations.
+
+#### port*
+The port of the printer. e.g. BT:9100
+
+#### ticket* **Remember to send it as a string with JSON.stringify()**
+The formatted (as JSON) ticket as follows:
+
+1. 
+
+```
+{
+  "font": "A",
+  "margin": {
+    "left": 4,
+    "right": 2
+  },
+  "type": "Reservation",
+  "type_abbr": "RE",
+  "ticket_id": "R-123123",
+  "barcode_type": "2D",
+  "barcode_cell_size": 8,
+  "website": "www.veevart.com",
+  "space_to_removable": 3,
+  "title": "Veevart",
+  "title_font_size": 4,
+  "subtitle": "Picasso Exposition",
+  "subtitle_font_size": 1,
+  "date": "June 21, 2017",
+  "space_to_address": 11,
+  "place": "Museum",
+  "address": {
+    "street": "123 Street",
+    "city": "New York, NY, 10001"
+  }
+}
+```
+
+
+
 ### Print receipt
-The `printReceipt(port, receipt, success, error, receiptId, alignment, international, font)` function allows to print a given text to the printer connected at the given port, it supports the customization of alignment, international chars and font style. 
+The `printReceipt(port, receipt, success, error[, receiptId, alignment, international, font])` function allows to print a given text to the printer connected at the given port, it supports the customization of alignment, international chars and font style. 
 `printReceipt(port, receipt, success, error, [receiptId, alignment, international, font])`
 
 #### port*

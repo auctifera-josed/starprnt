@@ -21,9 +21,14 @@
 
 - (void)portDiscovery:(CDVInvokedUrlCommand *)command;
 - (void)printData:(CDVInvokedUrlCommand *)command;
+- (void)printRawData:(CDVInvokedUrlCommand *)command;
 - (void)printReceipt:(CDVInvokedUrlCommand *)command;
-- (void)setBlackMarkSensor:(CDVInvokedUrlCommand *)command;
-- (void)clearBlackMarkSensor:(CDVInvokedUrlCommand *)command;
+- (void)printTicket:(CDVInvokedUrlCommand *)command;
+- (void)activateBlackMarkSensor:(CDVInvokedUrlCommand *)command;
+- (void)cancelBlackMarkSensor:(CDVInvokedUrlCommand *)command;
+- (void)setToDefaultSettings:(CDVInvokedUrlCommand *)command;
+// - (void)setPrintDirection:(CDVInvokedUrlCommand *)command;Not supported in TSP700II
 - (void)connect:(CDVInvokedUrlCommand *)command;
+- (void)hardReset:(CDVInvokedUrlCommand *)command;
 
 @end
