@@ -115,7 +115,7 @@ The formatted (as JSON) receipt as follows:
 ```javascript
 {
   "international": "EN",
-  "paper_inches": 3, //For future development
+  "paper_inches": 3, /*For future development*/
   "transaction_id": "P-1235667",
   "barcode": true,
   "font": "A",
@@ -164,15 +164,13 @@ The formatted (as JSON) receipt as follows:
 callbacks
 
 ### Print ticket
-The `printTicket(port, ticket, success, error)` function allows to print a given ticket previously formatted, it has two sections (main, removable) it supports some customizations.
+The `printTicket(port, ticket, success, error)` function allows to print a given ticket previously formatted, it supports some customizations.
 
 #### port*
 The port of the printer. e.g. BT:9100
 
 #### ticket* **Remember to send it as a string with JSON.stringify()**
 The formatted (as JSON) ticket as follows:
-
-1. 
 
 ```
 {
@@ -184,6 +182,7 @@ The formatted (as JSON) ticket as follows:
   "type": "Reservation",
   "type_abbr": "RE",
   "ticket_id": "R-123123",
+  "barcode_left_margin": 8,
   "barcode_type": "2D",
   "barcode_cell_size": 8,
   "website": "www.veevart.com",
@@ -201,8 +200,6 @@ The formatted (as JSON) ticket as follows:
   }
 }
 ```
-
-
 
 ### Print receipt
 The `printReceipt(port, receipt, success, error[, receiptId, alignment, international, font])` function allows to print a given text to the printer connected at the given port, it supports the customization of alignment, international chars and font style. 
@@ -237,6 +234,9 @@ Font style, options are:
 - A: SCBFontStyleTypeA ... Font-A (12 x 24 dots) /
 Specify 7 x 9 font (half dots)
 - B: CBFontStyleTypeB ... Font-B (9 x 24 dots) / Specify 5 x 9 font (2P-1)
+
+### Print Data
+The `printData(port, data, success, error)`
 
 ### Printer events
 

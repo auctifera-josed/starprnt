@@ -171,29 +171,24 @@ static NSString *dataCallbackId = nil;
         [builder appendAlignment:[self getAlignment:header[@"alignment"]]];
         [builder appendFontStyle:[self getFont:receipt[@"font"]]];
         //Start header
-        if (company_name != nil && company_name != (id)[NSNull null]){
+        if (company_name){
             [builder appendDataWithMultiple:[company_name dataUsingEncoding:encoding] width:2 height:2];
             [builder appendLineFeed:1];
         }
-        if (company_street != nil && company_street != (id)[NSNull null])
-            [builder appendDataWithLineFeed:[company_street dataUsingEncoding:encoding]];
-        if (company_country != nil && company_country != (id)[NSNull null])
-            [builder appendDataWithLineFeed:[company_country dataUsingEncoding:encoding]];
+        [builder appendDataWithLineFeed:[company_street dataUsingEncoding:encoding]];
+        [builder appendDataWithLineFeed:[company_country dataUsingEncoding:encoding]];
         [builder appendLineFeed:1];
-        if (seller != nil && seller != (id)[NSNull null])
-            [builder appendDataWithLineFeed:[seller dataUsingEncoding:encoding]];
+        [builder appendDataWithLineFeed:[seller dataUsingEncoding:encoding]];
         [builder appendAlignment:SCBAlignmentPositionLeft];
-        if (date != nil && date != (id)[NSNull null]){
+        if (date){
             [builder appendData:[date dataUsingEncoding:encoding]];
-            if (time != nil && time != (id)[NSNull null]){
+            if (time){
                 [builder appendData:[@"                                 " dataUsingEncoding:encoding]];
                 [builder appendDataWithLineFeed:[time dataUsingEncoding:encoding]];
             }
         }
-        if ([header[@"divider"] intValue] == 1){
-            [builder appendData:[@"------------------------------------------------" dataUsingEncoding:encoding]];
-            [builder appendLineFeed:1];
-        }
+        if ([header[@"divider"] boolValue])
+            [builder appendDataWithLineFeed:[@"------------------------------------------------" dataUsingEncoding:encoding]];
         //Start body
         [builder appendBytes:setHorizontalTab length:sizeof(setHorizontalTab)];
         [builder appendData:[@"Qty." dataUsingEncoding:encoding]];
@@ -203,7 +198,7 @@ static NSString *dataCallbackId = nil;
         [builder appendDataWithLineFeed:[@"Amount" dataUsingEncoding:encoding]];
          
         for (NSDictionary *product in (NSArray *) body[@"product_list"]){
-            if (product[@"quantity"] != nil && product[@"quantity"] != (id)[NSNull null] && product[@"description"] != nil && product[@"description"] != (id)[NSNull null] && product[@"amount"] != nil && product[@"amount"] != (id)[NSNull null]){
+            if (product[@"quantity"] && product[@"description"] && product[@"amount"]){
                 [builder appendData:[[NSString stringWithFormat:@"%@", product[@"quantity"]]  dataUsingEncoding:encoding]];
                 //dividing description in substrings to write in multiple lines
                 NSString *description = product[@"description"];
@@ -249,27 +244,26 @@ static NSString *dataCallbackId = nil;
         [builder appendBytes:twoTabs length:sizeof(twoTabs)];
         [builder appendDataWithMultiple:[body[@"total"] dataUsingEncoding:encoding] width:2 height:2];
         [builder appendLineFeed:1];
-        if ([body[@"divider"] intValue] == 1){
+        if ([body[@"divider"] boolValue])
             [builder appendDataWithLineFeed:[@"------------------------------------------------" dataUsingEncoding:encoding]];
-        }
         [builder appendAlignment:[self getAlignment:footer[@"alignment"]]];
         [builder appendUnitFeed:32];
         //Start footer
-        if (phone != nil && phone != (id)[NSNull null]){
+        if (phone){
             [builder appendData:[@"Tel. " dataUsingEncoding:encoding]];
             [builder appendDataWithLineFeed:[phone dataUsingEncoding:encoding]];
         }
-        if (fax != nil && fax != (id)[NSNull null]){
+        if (fax){
             [builder appendData:[@"Fax. " dataUsingEncoding:encoding]];
             [builder appendDataWithLineFeed:[fax dataUsingEncoding:encoding]];
         }
-        if (email != nil && email != (id)[NSNull null]){
+        if (email){
             [builder appendData:[@"Email. " dataUsingEncoding:encoding]];
             [builder appendDataWithLineFeed:[email dataUsingEncoding:encoding]];
         }
         [builder appendLineFeed:1];
-        if (notice != nil && notice != (id)[NSNull null]){
-            if ([notice[@"invert"] intValue] == 1)     
+        if (notice){
+            if ([notice[@"invert"] boolValue])     
                 [builder appendDataWithInvert:[notice[@"title"] dataUsingEncoding:encoding]];
             else
                 [builder appendData:[notice[@"title"] dataUsingEncoding:encoding]];
@@ -277,8 +271,8 @@ static NSString *dataCallbackId = nil;
             [builder appendData:[notice[@"text"] dataUsingEncoding:encoding]];
         }
         [builder appendLineFeed:2];
-        if (transaction_id != nil && transaction_id != (id)[NSNull null]){
-            if ([receipt[@"barcode"] intValue] == 1)
+        if (transaction_id){
+            if ([receipt[@"barcode"] boolValue])
                 [builder appendBarcodeDataWithAlignment:[transaction_id dataUsingEncoding:encoding] symbology:SCBBarcodeSymbologyCode39 width:SCBBarcodeWidthMode1 height:40 hri:YES position:SCBAlignmentPositionCenter];
             else
                 [builder appendData:[transaction_id dataUsingEncoding:encoding]];
@@ -312,53 +306,26 @@ static NSString *dataCallbackId = nil;
     if (ticket) { //JSON
         NSDictionary    *address = ticket[@"address"],
                         *margin = ticket[@"margin"];
-        int leftMargin = [margin[@"left"] intValue],
-            rightMargin = [margin[@"right"] intValue];
+        
+        NSMutableArray  *leftMarginCommand = [NSMutableArray arrayWithObjects:@27, @108, nil],
+                        *rightMarginCommand = [NSMutableArray arrayWithObjects:@27, @81, nil],
+                        *barcodeLeftMarginCommand = [NSMutableArray arrayWithObjects:@27, @108, @6, nil];
+        
+        [leftMarginCommand addObject:@([margin[@"left"] intValue])];
+        [rightMarginCommand addObject:@([margin[@"right"] intValue])];
+        [barcodeLeftMarginCommand replaceObjectAtIndex:2 withObject:@([ticket[@"barcode_left_margin"] intValue])];
+
+        unsigned char *leftMargin = [self getCommandAsBytes:leftMarginCommand];
+        unsigned char *rightMargin = [self getCommandAsBytes:rightMarginCommand];
+        unsigned char *barcodeLeftMargin = [self getCommandAsBytes:barcodeLeftMarginCommand];
 
         [builder beginDocument];
         //Left Margin
-        if (leftMargin == 0)
-            [builder appendBytes:"\x1B\x6C\x0" length:sizeof("\x1B\x6C\x0") - 1];
-        else if (leftMargin == 1)
-            [builder appendBytes:"\x1B\x6C\x1" length:sizeof("\x1B\x6C\x1") - 1];
-        else if (leftMargin == 2)
-           [builder appendBytes:"\x1B\x6C\x2" length:sizeof("\x1B\x6C\x2") - 1];
-        else if (leftMargin == 3)
-           [builder appendBytes:"\x1B\x6C\x3" length:sizeof("\x1B\x6C\x3") - 1];
-        else if (leftMargin == 4)
-           [builder appendBytes:"\x1B\x6C\x4" length:sizeof("\x1B\x6C\x4") - 1];
-        else if (leftMargin == 5)
-           [builder appendBytes:"\x1B\x6C\x5" length:sizeof("\x1B\x6C\x5") - 1];
-        else if (leftMargin == 6)
-           [builder appendBytes:"\x1B\x6C\x6" length:sizeof("\x1B\x6C\x6") - 1];
-        else if (leftMargin == 7)
-           [builder appendBytes:"\x1B\x6C\x7" length:sizeof("\x1B\x6C\x7") - 1];
-        else if (leftMargin == 8)
-           [builder appendBytes:"\x1B\x6C\x8" length:sizeof("\x1B\x6C\x8") - 1];
-        else if (leftMargin == 9)
-            [builder appendBytes:"\x1B\x6C\x9" length:sizeof("\x1B\x6C\x9") - 1];       
+        if (margin[@"left"])
+            [builder appendBytes:leftMargin length:sizeof(leftMargin)];
         //Right Margin
-        if (rightMargin == 0)
-            [builder appendBytes:"\x1B\x51\x0" length:sizeof("\x1B\x51\x0") - 1];
-        else if (rightMargin == 1)
-            [builder appendBytes:"\x1B\x51\x1" length:sizeof("\x1B\x51\x1") - 1];
-        else if (rightMargin == 2)
-           [builder appendBytes:"\x1B\x51\x2" length:sizeof("\x1B\x51\x2") - 1];
-        else if (rightMargin == 3)
-           [builder appendBytes:"\x1B\x51\x3" length:sizeof("\x1B\x51\x3") - 1];
-        else if (rightMargin == 4)
-           [builder appendBytes:"\x1B\x51\x4" length:sizeof("\x1B\x51\x4") - 1];
-        else if (rightMargin == 5)
-           [builder appendBytes:"\x1B\x51\x5" length:sizeof("\x1B\x51\x5") - 1];
-        else if (rightMargin == 6)
-           [builder appendBytes:"\x1B\x51\x6" length:sizeof("\x1B\x51\x6") - 1];
-        else if (rightMargin == 7)
-           [builder appendBytes:"\x1B\x51\x7" length:sizeof("\x1B\x51\x7") - 1];
-        else if (rightMargin == 8)
-           [builder appendBytes:"\x1B\x51\x8" length:sizeof("\x1B\x51\x8") - 1];
-        else if (rightMargin == 9)
-            [builder appendBytes:"\x1B\x51\x9" length:sizeof("\x1B\x51\x9") - 1];       
-        
+        if (margin[@"right"])
+            [builder appendBytes:rightMargin length:sizeof(rightMargin)];
         [builder appendCodePage:SCBCodePageTypeCP1252];
         [builder appendFontStyle:[self getFont:ticket[@"font"]]];
         [builder appendAlignment:SCBAlignmentPositionLeft];
@@ -376,9 +343,10 @@ static NSString *dataCallbackId = nil;
         [builder appendDataWithLineFeed:[ticket[@"ticket_id"] dataUsingEncoding:encoding]];
         [builder appendDataWithLineFeed:[ticket[@"website"] dataUsingEncoding:encoding] line:[ticket[@"space_to_removable"] intValue]];
         [builder appendFontStyle:[self getFont:ticket[@"font"]]];
-        [builder appendAlignment:SCBAlignmentPositionCenter];
+        // [builder appendAlignment:SCBAlignmentPositionCenter];
+        [builder appendBytes:barcodeLeftMargin length:sizeof(barcodeLeftMargin)];
         [builder appendDataWithLineFeed:[ticket[@"type_abbr"] dataUsingEncoding:encoding]];
-        if (ticket[@"barcode_type"] == "1D")
+        if ([ticket[@"barcode_type"] isEqualToString:@"1D"])
             [builder appendBarcodeData:[ticket[@"ticket_id"] dataUsingEncoding:encoding] symbology:SCBBarcodeSymbologyCode39 width:SCBBarcodeWidthMode1 height:[ticket[@"barcode_cell_size"] intValue] hri:YES];
         else{
             [builder appendQrCodeData:[ticket[@"ticket_id"] dataUsingEncoding:encoding] model:SCBQrCodeModelNo2 level:SCBQrCodeLevelL cell:[ticket[@"barcode_cell_size"] intValue]];
@@ -410,11 +378,11 @@ static NSString *dataCallbackId = nil;
     }   
 
     unsigned char hardReset[] = {0x1B, 0x3F, 0x0A, 0x00};
-    
     [builder appendBytes:hardReset length:sizeof(hardReset)];
     
     [self sendCommand:[builder.commands copy] portName:portName callbackId:command.callbackId];
 }
+
 //Page Mode is NOT supported in TSP700II
 // - (void)setPrintDirection:(CDVInvokedUrlCommand *)command {
 //     NSLog(@"setting print direction");
@@ -523,6 +491,13 @@ static NSString *dataCallbackId = nil;
 }
 
 //Utilities
+
+- (unsigned char *)getCommandAsBytes:(NSMutableArray *)command {
+    unsigned char *buffer = (unsigned char *)calloc([command count], sizeof(unsigned char));
+    for (int i=0; i<[command count]; i++)
+        buffer[i] = [[command objectAtIndex:i] unsignedCharValue];
+    return buffer;
+}
 
 - (void)sendCommand:(NSMutableData *)commands portName:(NSString *)portName callbackId:(NSString *)callbackId{
     [self.commandDelegate runInBackground:^{
