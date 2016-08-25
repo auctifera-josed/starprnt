@@ -121,7 +121,7 @@ static NSString *dataCallbackId = nil;
     [builder appendFontStyle:fontStyle];
     [builder appendData:[content dataUsingEncoding:encoding]];
     [builder appendUnitFeed:32];
-    if (receiptid != nil && receiptid != (id)[NSNull null])
+    if (receiptid)
         [builder appendQrCodeDataWithAlignment:[receiptid dataUsingEncoding:encoding] model:SCBQrCodeModelNo2 level:SCBQrCodeLevelQ cell:6 position:SCBAlignmentPositionCenter];
     [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
     [builder endDocument];

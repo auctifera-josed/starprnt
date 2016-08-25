@@ -172,6 +172,18 @@ The port of the printer. e.g. BT:9100
 #### ticket* **Remember to send it as a string with JSON.stringify()**
 The formatted (as JSON) ticket as follows:
 
+1. font: The font for the entire receipt, options are: 
+  - A
+  - B
+2. margin: //Uses the left edge as a standard to set the left margin as (current ANK character pitch x n).
+  2. left: n; 
+  2. right: n;
+3. barcode_type: options are:
+  - 1D
+  - 2D
+4. space_to_removable: lines from address to removable
+5. space_to_address: lines from date to address
+
 ```
 {
   "font": "A",
@@ -200,6 +212,21 @@ The formatted (as JSON) ticket as follows:
   }
 }
 ```
+
+### Print Data
+The `printData(port, text, success, error)` function allows to print raw data (no format) to the printer
+
+### Activate Black Mark Sensor
+The `activateBlackMarkSensor(port, success, error)` function, activates the black mark sensor in the printer.
+
+### Cancel Black Mark Sensor
+The `cancelBlackMarkSensor(port, success, error)` function, deactivates the black mark sensor in the printer.
+
+### Default Settings
+The `setDefaultSettings(port, success, error)` resets the printer to default settings.
+
+### Reset
+The `hardReset: function(port, success, error)` function, resets (doesn't change configurations) the printer and executes a self print.
 
 ### Print receipt
 The `printReceipt(port, receipt, success, error[, receiptId, alignment, international, font])` function allows to print a given text to the printer connected at the given port, it supports the customization of alignment, international chars and font style. 
@@ -236,7 +263,7 @@ Specify 7 x 9 font (half dots)
 - B: CBFontStyleTypeB ... Font-B (9 x 24 dots) / Specify 5 x 9 font (2P-1)
 
 ### Print Data
-The `printData(port, data, success, error)`
+The `printData(port, data, success, error)
 
 ### Printer events
 
