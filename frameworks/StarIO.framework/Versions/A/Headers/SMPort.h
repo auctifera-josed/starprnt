@@ -19,7 +19,7 @@
 #endif
 
 #import "WBluetoothPort.h"
-#import "BluetoothPort.h"
+#import "ExternalAccessoryPort.h"
 #import "Lock.h"
 
 @interface PortException : NSException
@@ -40,8 +40,8 @@
 
 @interface SMPort : NSObject {
     void * m_port;
-    WBluetoothPort* wBluetoothPort;
-    BluetoothPort* bluetoothPort;
+    WBluetoothPort *wBluetoothPort;
+    ExternalAccessoryPort *externalAccessoryPort;
     NSString * m_portName;
     NSString * m_portSettings;
     int m_ioTimeoutMillis;
@@ -65,7 +65,7 @@
 /*!
  *  Search printer on LAN or paired bluetooth device.
  *
- *  @param Identifies the interface type to search (ex. "TCP:", "BT:", "BT:xxx").
+ *  @param  target   the interface type to search (ex. "TCP:", "BT:", "BT:xxx", "USB:xxx").
  *
  *  @return List of printers that were found.
  */
@@ -77,6 +77,7 @@
  *  @param portName        String taking the following form
  *                           "tcp:nnn.nnn.nnn.nnn" which opens the network printer at the specified IP address (i.e. '192.168.11.3')
  *                           "bt:<iOS port name>"  which opens the bluetooth printer at the specified port name. (i.e. 'Star Micronics')
+ *                           "usb:<iOS port name>" which opens the usb printer at specified port name.(i.e. 'TSP100')
  *  @param portSettings    Star Line Mode: Empty string ("")
  *                         Portable Printer (Star Line): "Portable"
  *                         Portable Printer (ESC/POS): "Portable;ESCPOS"
@@ -97,7 +98,7 @@
  *  This function writes data to the device.
  *
  *  @param writeBuffer Pointer to a byte buffer containing the write data.
- *  @param offset      Amount of data that was already written.
+ *  @param offSet      Amount of data that was already written.
  *  @param size        Amount of data left to write.
  *
  *  @return Amount of data written.
@@ -109,9 +110,9 @@
 /*!
  *  This function reads data from the device.
  *
- *  @param readBuffer       Pointer to a byte buffer into which data is read.
- *  @param offSet           Size in bytes to read.
- *  @param sizeCommunicated Amount of data to be write to the buffer.
+ *  @param readBuffer   Pointer to a byte buffer into which data is read.
+ *  @param offSet       Size in bytes to read.
+ *  @param size         Amount of data to be write to the buffer.
  *
  *  @return Aount of data written to the buffer.
  *

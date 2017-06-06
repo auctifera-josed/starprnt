@@ -204,6 +204,14 @@ typedef NS_ENUM(NSInteger, SCBBitmapConverterRotation) {
     SCBBitmapConverterRotationRotate180
 };
 
+#pragma mark - BlackMark
+
+typedef NS_ENUM(NSInteger, SCBBlackMarkType) {
+    SCBBlackMarkTypeInvalid,
+    SCBBlackMarkTypeValid,
+    SCBBlackMarkTypeValidWithDetection
+};
+
 @interface ISCBBuilder : NSObject
 
 @property (nonatomic, readonly) NSMutableData *commands;
@@ -583,5 +591,33 @@ typedef NS_ENUM(NSInteger, SCBBitmapConverterRotation) {
 - (void)appendBitmapWithAlignment:(UIImage *)image
                         diffusion:(BOOL)diffusion
                          position:(SCBAlignmentPosition)position;
+
+#pragma mark - Bitmap(Compression)
+
+- (void)appendBitmapCompression:(UIImage *)image
+                      diffusion:(BOOL)diffusion;
+
+- (void)appendBitmapCompressionWithAbsolutePosition:(UIImage *)image
+                                          diffusion:(BOOL)diffusion
+                                           position:(NSInteger)position;
+
+- (void)appendBitmapCompressionWithAlignment:(UIImage *)image
+                                   diffusion:(BOOL)diffusion
+                                    position:(SCBAlignmentPosition)position;
+
+#pragma mark - BlackMark
+
+- (void)appendBlackMark:(SCBBlackMarkType)type;
+
+#pragma mark - PageMode
+
+- (void)beginPageMode:(CGRect)rect
+             rotation:(SCBBitmapConverterRotation)rotation;
+
+- (void)endPageMode;
+
+- (void)appendPageModeVerticalAbsolutePosition:(NSInteger)position;
+
+- (void)appendPageModeRotation:(SCBBitmapConverterRotation)rotation;
 
 @end

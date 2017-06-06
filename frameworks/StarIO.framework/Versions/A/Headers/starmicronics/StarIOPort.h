@@ -437,9 +437,8 @@ STARIOPORT_API SM_BOOLEAN CALL_CONVENT ResetDevice(void * port);
 
 /*!
  *  デバイスからファームウェア情報を取得する。
+ *  @param  port    ポート構造体へのポインタ
  *
- *  @param  fwInfo
- *  @param  fwInfoLength
  *  @return 成功時はSM_TRUE, 失敗時はSM_FALSEを返す。
  */
 STARIOPORT_API char * CALL_CONVENT GetFirmwareInformation(void * port);

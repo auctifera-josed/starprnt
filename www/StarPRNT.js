@@ -1,6 +1,9 @@
 var exec = require('cordova/exec');
 
 module.exports = {
+    openCashDrawer: function (port, success, error) {
+        exec(success, error, "StarPRNT", "openCashDrawer", [port]);
+    },
     printReceipt: function (port, receipt, success, error, receiptId, alignment, international, font) {
         exec(success, error, "StarPRNT", "printData", [port, receipt, receiptId, alignment, international, font]);
     },
@@ -31,7 +34,7 @@ module.exports = {
     hardReset: function(port, success, error) {
         exec(success, error, "StarPRNT", "hardReset", [port]);
     },
-    connect: function (port, callback) {
+    connect: function (printerPort, drawerPort, callback) {
         var connected = false;
         exec(function (result) {
             if (!connected) {
@@ -43,46 +46,7 @@ module.exports = {
         },
         function (error) {
             callback(error)
-        }, 'StarPRNT', 'connect', [port]);
+        }, 'StarPRNT', 'connect', [printerPort, drawerPort]);
     }
 };
-// exports.printReceipt = function(port, receipt, success, error, receiptId, alignment, international, font) {
-//     exec(success, error, "StarPRNT", "printData", [port, receipt, receiptId, alignment, international, font]);
-// };
-
-// exports.printFormattedReceipt = function(port, receipt, success, error) {
-//     exec(success, error, "StarPRNT", "printReceipt", [port, receipt]);
-// }
-
-// exports.portDiscovery = function(type, success, error) {
-//     exec(success, error, "StarPRNT", "portDiscovery", [type]);
-// };
-
-// exports.setBlackMarkSensor = function(port, success, error) {
-//     exec(success, error, "StarPRNT", "setBlackMarkSensor", [port]);
-// };
-
-// exports.clearBlackMarkSensor = function(port, success, error) {
-//     exec(success, error, "StarPRNT", "clearBlackMarkSensor", [port]);
-// };
-
-// exports.setDefaultSettings = function(port, success, error) {
-//     exec(success, error, "StarPRNT", "setToDefaultSettings", [port]);
-// };
-
-// exports.connect = function (port, callback) {
-// 	var connected = false;
-//     exec(function (result) {
-//         if (!connected) {
-//             callback(null, result);
-//             connected = true;
-//         } else {
-//             cordova.fireWindowEvent("starPrntData", result);
-//         }
-//     },
-//     function (error) {
-//         callback(error)
-//     }, 'StarPRNT', 'connect', [port]);
-// }
-
 

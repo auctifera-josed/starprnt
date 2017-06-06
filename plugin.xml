@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-starprnt" version="0.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+<plugin id="cordova-plugin-starprnt" version="0.0.2" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
 	<name>StarPRNT</name>
 	<description>Plugin to use Star printers</description>
 	<author>Jose Angarita</author>
@@ -21,11 +21,15 @@
 				<param name="ios-package" value="StarPRNT" />
 			</feature>
 		</config-file>
+		
 		<config-file target="*-Info.plist" parent="UISupportedExternalAccessoryProtocols">
 	    <array>
         <string>jp.star-m.starpro</string>
 	    </array>
 		</config-file>
+		<config-file target="*-Info.plist" parent="NSBluetoothPeripheralUsageDescription">
+      <string>To connect to Star Micronic's Devices</string>
+	  </config-file>
 		<header-file src="src/ios/Communication.h" />
 		<source-file src="src/ios/Communication.m" />
 		<header-file src="src/ios/StarPRNT.h" />

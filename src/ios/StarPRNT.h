@@ -17,7 +17,8 @@
 
 @interface StarPRNT : CDVPlugin <StarIoExtManagerDelegate> {}
 
-@property (nonatomic) StarIoExtManager *starIoExtManager;
+@property (nonatomic) StarIoExtManager *printerManager;
+@property (nonatomic) StarIoExtManager *drawerManager;
 
 - (void)portDiscovery:(CDVInvokedUrlCommand *)command;
 - (void)printData:(CDVInvokedUrlCommand *)command;
@@ -30,5 +31,6 @@
 // - (void)setPrintDirection:(CDVInvokedUrlCommand *)command;Not supported in TSP700II
 - (void)connect:(CDVInvokedUrlCommand *)command;
 - (void)hardReset:(CDVInvokedUrlCommand *)command;
+- (void)openCashDrawer:(CDVInvokedUrlCommand *)command;
 
 @end

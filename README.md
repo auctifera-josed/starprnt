@@ -2,95 +2,94 @@
 
 Cordova plugin for [Star micronics printers](http://www.starmicronics.com/printer/home.aspx)
 
-This plugin defines global cordova.starprnt object.
+This plugin defines global starprnt object.
 
 Although in the global scope, it is not available until after the deviceready event.
 ```javascript
 document.addEventListener("deviceready", onDeviceReady, false);
 function onDeviceReady() {
-    console.log(cordova.starprnt);
+    console.log(starprnt);
 }
 ```
 
-## Install
+# Install
 
 Install using `cordova plugin add https://github.com/auctifera-josed/starprnt`
 
-## Example
-
-`var printer = cordova.starprnt;//window.starprnt, cordova.plugins.starprnt`
+# Example
 
 ```javascript
-printer.portDiscovery('All',
-	function(res){
-		console.log(res);
-	},
-	function(err){
-		console.log(err);
-	}
-)
+var q = function(res){console.log(res)};
+starprnt.portDiscovery('All',q,q);
 ```
-Log will be something like: [{modelName: "Star Micronics", macAddress: "", portName: "BT:9100"}]
-```javascript
-printer.connect('BT:9100',
-	function(err,res){
-		if(err)
-			console.log(err);
-		else 
-			console.log(res);
-	}
-)
-```
-true = success | false = error
+Success Log Example: [{modelName: "SAC10", macAddress: "", portName: "BT:DK-AirCash"}, {modelName: "Star Micronics", macAddress: "", portName: "BT:9100"}]
 
 ```javascript
-printer.printReceipt('BT:9100',
-	'Hello World',
-	function(res){
-		console.log(res);
-	},
-	function(res){
-		console.log(res);
-	},
-	'12345'
-	'left',
-	'US',
-	'A'
-);
+starprnt.connect("BT:9100","BT:DK-AirCash",function(err,res){});
+starprnt.printData("BT:9100","Star Clothing Boutique\n123 Star Road\nCity, State 12345\n\n",q,q); 
+starprnt.openCashDrawer("BT:DK-AirCash",q,q);
 ```
 
-## API
+# API Reference
+- [portDiscovery(type, success, error)](#port-discovery)
+- [connect(printerPort, drawerPort, callback)](#connect)
+- [printFormattedReceipt(port, receipt, success, error)](#print-formatted-receipt)
+- [printTicket(port, ticket, success, error)](#print-ticket)
+- [printData(port, text, success, error)](#print-data)
+- [activateBlackMarkSensor(port, success, error)](#activate-black-mark-sensor)
+- [cancelBlackMarkSensor(port, success, error)](#cancel-black-mark-sensor)
+- [setDefaultSettings(port, success, error)](#set-default-settings)
+- [hardReset(port, success, error)](#hard-reset)
+- [printReceipt(port, receipt, success, error[, receiptId, alignment, international, font])](#print-receipt)
+- [openCashDrawer(port, success, error)](#open-cash-drawer)
 
-### Port/Printer discovery
+# Functions
+Almost all the methods take success an error functions as parameters, this are callback functions to execute in either case. They are not listed in the parameters for simplicity.
+
+E.g: 
+```javascript
+var callbackFunction = function(r){console.log(r);}
+```
+
+## Open Cash Drawer
+The `openCashDrawer(port, success, error)` function sends an open command to the drawer.
+
+| Parameter | Description | Type/Example |
+| port | The cash drawer port  | String: "BT:DK-AirCash" |
+
+## Port discovery
 The `portDiscovery(type, success, error)` function gets a list of ports where star printers are currently connected.
-`portDiscovery(type,success,error)`
 
-#### type*
-Port types are: 'All', 'Bluetooth', 'USB', 'LAN'
-#### success*/error*
-callbacks
+| Paremeter | Description | Type/Example |
+| type | Port types are: 'All', 'Bluetooth', 'USB', 'LAN' | String |
 
-### Connect to the printer 
-The `connect` function allows to 'connect' to the printer, to keep alive the connection between the device and the printer.
+## Connect
+The `connect(printerPort, drawerPort, function(err,res){})` function allows to 'connect' to the peripheral (s), to keep alive the connection between the device and the peripherals (s).
 
-**you need to connect before printing out**
-`connect(port,callback)`
+| Parameter | Description | Type/Example |
+| printerPort | The printer port  | String: "BT:9100" |
+| drawerPort | The cash drawer port  | String: "BT:DK-AirCash" |
+| callback | A callback function | function(err, res){} |
 
-#### port*
-The port of the printer. e.g. BT:9100
+Example:
+```javascript
+starprnt.connect("BT:9100","BT:DK-AirCash",function(err,res){});
+starprnt.connect("BT:9100",null,function(err,res){});
+starprnt.connect(undefined,"BT:DK-AirCash",function(err,res){});
+```
 
-#### callback*
-callback
+**Notes:**
+- You need to connect before printing out
+- You should call this function on app resume event
 
-### Print formatted receipt
+## Print formatted receipt
 The `printFormattedReceipt(port, JSON.stringify(receipt), success, error)` function allows to print a receipt on a predefined format with 3 sections (header, body and footer), each section with multiple **optional** parameters.
 
-#### port*
-The port of the printer. e.g. BT:9100
+| Parameter | Description | Type/Example |
+| port | The printer port  | String: "BT:9100" |
+| receipt | The formatted (as JSON) receipt. **Remember to send it as a string with JSON.stringify()**  | String (see example below) |
 
-#### receipt* **Remember to send it as a string with JSON.stringify()**
-The formatted (as JSON) receipt as follows:
-
+Receipt parameter JSON description:
 1. International: Sets the international for the entire receipt, options are:
   - US
   - FR
@@ -112,6 +111,7 @@ The formatted (as JSON) receipt as follows:
   10. notice
     10. invert: If true, the title will be shown with black background and white letters (inverted)
 
+JSON example:
 ```javascript
 {
   "international": "EN",
@@ -160,18 +160,15 @@ The formatted (as JSON) receipt as follows:
   }
 }
 ```
-#### success*/error*
-callbacks
 
-### Print ticket
+## Print ticket
 The `printTicket(port, ticket, success, error)` function allows to print a given ticket previously formatted, it supports some customizations.
 
-#### port*
-The port of the printer. e.g. BT:9100
+| Parameter | Description | Type/Example |
+| port | The printer port  | String: "BT:9100" |
+| ticket | The formatted (as JSON) ticket. **Remember to send it as a string with JSON.stringify()** | String (see example below) |
 
-#### ticket* **Remember to send it as a string with JSON.stringify()**
-The formatted (as JSON) ticket as follows:
-
+Ticket parameter JSON description:
 1. font: The font for the entire receipt, options are: 
   - A
   - B
@@ -184,6 +181,7 @@ The formatted (as JSON) ticket as follows:
 4. space_to_removable: lines from address to removable
 5. space_to_address: lines from date to address
 
+JSON example:
 ```
 {
   "font": "A",
@@ -213,61 +211,51 @@ The formatted (as JSON) ticket as follows:
 }
 ```
 
-### Print Data
-The `printData(port, text, success, error)` function allows to print raw data (no format) to the printer
+## Print Data
+The `printData(port, text, success, error)
 
-### Activate Black Mark Sensor
+| Parameter | Description | Type/Example |
+| port | The printer port  | String: "BT:9100" |
+| text | The text to be printed | String: "Star Clothing Boutique\n123 Star Road\nCity, State 12345\n" |
+
+## Activate Black Mark Sensor
 The `activateBlackMarkSensor(port, success, error)` function, activates the black mark sensor in the printer.
 
-### Cancel Black Mark Sensor
+| Parameter | Description | Type/Example |
+| port | The printer port  | String: "BT:9100" |
+
+## Cancel Black Mark Sensor
 The `cancelBlackMarkSensor(port, success, error)` function, deactivates the black mark sensor in the printer.
 
-### Default Settings
+| Parameter | Description | Type/Example |
+| port | The printer port  | String: "BT:9100" |
+
+## Set Default Settings
 The `setDefaultSettings(port, success, error)` resets the printer to default settings.
 
-### Reset
-The `hardReset: function(port, success, error)` function, resets (doesn't change configurations) the printer and executes a self print.
+| Parameter | Description | Type/Example |
+| port | The printer port  | String: "BT:9100" |
 
-### Print receipt
-The `printReceipt(port, receipt, success, error[, receiptId, alignment, international, font])` function allows to print a given text to the printer connected at the given port, it supports the customization of alignment, international chars and font style. 
-`printReceipt(port, receipt, success, error, [receiptId, alignment, international, font])`
+## Hard Reset
+The `hardReset(port, success, error)` function, resets (doesn't change configurations) the printer and executes a self print.
 
-#### port*
-The port of the printer. e.g. BT:9100
+| Parameter | Description | Type/Example |
+| port | The printer port  | String: "BT:9100" |
 
-#### receipt*
-The text to be printed. e.g. "Star Clothing Boutique\n123 Star Road\nCity, State 12345\n"
+## Print receipt
+The `printReceipt(port, receipt, success, error, receiptId, alignment, international, font)` function allows to print a given text to the printer connected at the given port, it supports the customization of alignment, international chars and font style. 
 
-#### success*/error*
-callbacks
+| Parameter | Description | Type/Example |
+| port | The printer port  | String: "BT:9100" |
+| receipt | The text to be printed. | String: "Star Clothing Boutique\n123 Star Road\nCity, State 12345\n" |
+| receiptId | Text to be printed as QR code at the end of the receipt. Null or undefined will avoid printing QR code | String: "R-12322" |
+| alignment | Alignment of the text, options are: left, center, right | String: "center" |
+| international | The international character mode, options are: US, FR, UK | String: "US" |
+| font | Font style, options are: A (12 x 24 dots), B (9 x 24 dots) | String: "A" |
 
-#### receiptId
-Text to be printed as QR code at the end of the receipt. Null or undefined will avoid printing QR code
-
-#### alignment (optional)
-Alignment of the text, options are:
-- left
-- center
-- right
-
-#### international (optional)
-The international character mode, options are:
-- US
-- FR
-- UK
-
-#### font (optional)
-Font style, options are:
-- A: SCBFontStyleTypeA ... Font-A (12 x 24 dots) /
-Specify 7 x 9 font (half dots)
-- B: CBFontStyleTypeB ... Font-B (9 x 24 dots) / Specify 5 x 9 font (2P-1)
-
-### Print Data
-The `printData(port, data, success, error)
-
-### Printer events
-
+# Printer events
 Listen to printer events as cases of the **starPrntData** event, cases are:
+
 - Printer cover open: printerCoverOpen
 - Printer cover close: printerCoverClose
 - Printer impossible: printerImpossible
@@ -276,24 +264,15 @@ Listen to printer events as cases of the **starPrntData** event, cases are:
 - Printer paper empty: printerPaperEmpty
 - Printer paper near empty: printerPaperNearEmpty
 - Printer paper ready: printerPaperReady
+
 ```javascript
 window.addEventListener('starPrntData', function (e) {
   switch (e.dataType) {
     case 'printerCoverOpen':
+      console.log(data);
       break;
-    case 'printerCoverClose':
-      break;
-    case 'printerImpossible':
-      break;
-    case 'printerOnline':
-      break;
-    case 'printerOffline':
-      break;
-    case 'printerPaperEmpty':
-      break;
-    case 'printerPaperNearEmpty':
-      break;
-    case 'printerPaperReady':
+    default:
+      console.log(data);
       break;
   }
 });

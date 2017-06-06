@@ -20,6 +20,14 @@ typedef NS_ENUM(NSInteger, StarIoExtEmulation) {     // Don't insert!
     StarIoExtEmulationStarDotImpact
 };
 
+typedef NS_ENUM(NSInteger, StarIoExtCharacterCode) {     // Don't insert!
+    StarIoExtCharacterCodeNone = 0,
+    StarIoExtCharacterCodeStandard,
+    StarIoExtCharacterCodeJapanese,
+    StarIoExtCharacterCodeSimplifiedChinese,
+    StarIoExtCharacterCodeTraditionalChinese
+};
+
 @interface StarIoExt : NSObject
 
 // Generic.
