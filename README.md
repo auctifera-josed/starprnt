@@ -67,6 +67,7 @@ The `portDiscovery(type, success, error)` function gets a list of ports where st
 The `connect(printerPort, drawerPort, function(err,res){})` function allows to 'connect' to the peripheral (s), to keep alive the connection between the device and the peripherals (s).
 
 | Parameter | Description | Type/Example |
+| ----------- | -------- | ---------- |
 | printerPort | The printer port  | String: "BT:9100" |
 | drawerPort | The cash drawer port  | String: "BT:DK-AirCash" |
 | callback | A callback function | function(err, res){} |
@@ -165,6 +166,7 @@ JSON example:
 The `printTicket(port, ticket, success, error)` function allows to print a given ticket previously formatted, it supports some customizations.
 
 | Parameter | Description | Type/Example |
+| ----------- | -------- | ---------- |
 | port | The printer port  | String: "BT:9100" |
 | ticket | The formatted (as JSON) ticket. **Remember to send it as a string with JSON.stringify()** | String (see example below) |
 
@@ -215,6 +217,7 @@ JSON example:
 The `printData(port, text, success, error)
 
 | Parameter | Description | Type/Example |
+| ----------- | -------- | ---------- |
 | port | The printer port  | String: "BT:9100" |
 | text | The text to be printed | String: "Star Clothing Boutique\n123 Star Road\nCity, State 12345\n" |
 
@@ -222,30 +225,35 @@ The `printData(port, text, success, error)
 The `activateBlackMarkSensor(port, success, error)` function, activates the black mark sensor in the printer.
 
 | Parameter | Description | Type/Example |
+| ----------- | -------- | ---------- |
 | port | The printer port  | String: "BT:9100" |
 
 ## Cancel Black Mark Sensor
 The `cancelBlackMarkSensor(port, success, error)` function, deactivates the black mark sensor in the printer.
 
 | Parameter | Description | Type/Example |
+| ----------- | -------- | ---------- |
 | port | The printer port  | String: "BT:9100" |
 
 ## Set Default Settings
 The `setDefaultSettings(port, success, error)` resets the printer to default settings.
 
 | Parameter | Description | Type/Example |
+| ----------- | -------- | ---------- |
 | port | The printer port  | String: "BT:9100" |
 
 ## Hard Reset
 The `hardReset(port, success, error)` function, resets (doesn't change configurations) the printer and executes a self print.
 
 | Parameter | Description | Type/Example |
+| ----------- | -------- | ---------- |
 | port | The printer port  | String: "BT:9100" |
 
 ## Print receipt
 The `printReceipt(port, receipt, success, error, receiptId, alignment, international, font)` function allows to print a given text to the printer connected at the given port, it supports the customization of alignment, international chars and font style. 
 
 | Parameter | Description | Type/Example |
+| ----------- | -------- | ---------- |
 | port | The printer port  | String: "BT:9100" |
 | receipt | The text to be printed. | String: "Star Clothing Boutique\n123 Star Road\nCity, State 12345\n" |
 | receiptId | Text to be printed as QR code at the end of the receipt. Null or undefined will avoid printing QR code | String: "R-12322" |
