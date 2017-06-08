@@ -97,25 +97,25 @@ The `printFormattedReceipt(port, JSON.stringify(receipt), success, error)` funct
 
 Receipt parameter JSON description:
 1. International: Sets the international for the entire receipt, options are:
-  - US
-  - FR
-  - UK
+    - US
+    - FR
+    - UK
 2. paper_inches: not yet implemented (will be use to support different paper size)
 3. transaction_id: The receipt ID to be printed center-bottom of the receipt
 4. barcode: Boolean value to indicate if the transaction_id should be displayed with a barcode
 5. font: The font for the entire receipt, options are: 
-  - A
-  - B (currently font B has weird behaviour due to different width)
+    - A
+    - B (currently font B has weird behaviour due to different width)
 6. divider: If true, a dashed divider will be shown below the section
 7. alignment: can be set separately for header, body and footer 
 8. header
-  8. date: Needs to be exactly of length 10 to display correctly
-  8. time: Needs to be exactly of length 5 to display correctly
+    8. date: Needs to be exactly of length 10 to display correctly
+    8. time: Needs to be exactly of length 5 to display correctly
 9. body
-  9. product_list: An array of objects, all children's fields (quantity, description, amount) are required in order to display an item
+    9. product_list: An array of objects, all children's fields (quantity, description, amount) are required in order to display an item
 10. footer
-  10. notice
-    10. invert: If true, the title will be shown with black background and white letters (inverted)
+    10. notice
+        10. invert: If true, the title will be shown with black background and white letters (inverted)
 
 JSON example:
 ```javascript
@@ -177,14 +177,14 @@ The `printTicket(port, ticket, success, error)` function allows to print a given
 
 Ticket parameter JSON description:
 1. font: The font for the entire receipt, options are: 
-  - A
-  - B
+    - A
+    - B
 2. margin: //Uses the left edge as a standard to set the left margin as (current ANK character pitch x n).
-  2. left: n; 
-  2. right: n;
+    2. left: n; 
+    2. right: n;
 3. barcode_type: options are:
-  - 1D
-  - 2D
+    - 1D
+    - 2D
 4. space_to_removable: lines from address to removable
 5. space_to_address: lines from date to address
 
@@ -292,6 +292,3 @@ window.addEventListener('starPrntData', function (e) {
 ```
 
 **Note:** This is based on the work from the guys at [InteractiveObject](https://github.com/InteractiveObject/StarIOPlugin)
-
-
-
