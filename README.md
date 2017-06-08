@@ -46,7 +46,7 @@ starprnt.openCashDrawer("BT:DK-AirCash",q,q);
 # Functions
 Almost all the methods take success an error functions as parameters, this are callback functions to execute in either case. They are not listed in the parameters for simplicity.
 
-*** indicates a required parameter**
+** "*" indicates a required parameter**
 
 E.g: 
 ```javascript
