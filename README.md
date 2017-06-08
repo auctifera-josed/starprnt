@@ -109,13 +109,13 @@ Receipt parameter JSON description:
 6. divider: If true, a dashed divider will be shown below the section
 7. alignment: can be set separately for header, body and footer 
 8. header
-    8. date: Needs to be exactly of length 10 to display correctly
-    8. time: Needs to be exactly of length 5 to display correctly
+    - date: Needs to be exactly of length 10 to display correctly
+    - time: Needs to be exactly of length 5 to display correctly
 9. body
-    9. product_list: An array of objects, all children's fields (quantity, description, amount) are required in order to display an item
+    - product_list: An array of objects, all children's fields (quantity, description, amount) are required in order to display an item
 10. footer
-    10. notice
-        10. invert: If true, the title will be shown with black background and white letters (inverted)
+    - notice
+    - invert: If true, the title will be shown with black background and white letters (inverted)
 
 JSON example:
 ```javascript
