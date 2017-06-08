@@ -46,6 +46,8 @@ starprnt.openCashDrawer("BT:DK-AirCash",q,q);
 # Functions
 Almost all the methods take success an error functions as parameters, this are callback functions to execute in either case. They are not listed in the parameters for simplicity.
 
+*** indicates a required parameter**
+
 E.g: 
 ```javascript
 var callbackFunction = function(r){console.log(r);}
@@ -55,13 +57,15 @@ var callbackFunction = function(r){console.log(r);}
 The `openCashDrawer(port, success, error)` function sends an open command to the drawer.
 
 | Parameter | Description | Type/Example |
-| port | The cash drawer port  | String: "BT:DK-AirCash" |
+| ----------- | -------- | ---------- |
+| port* | The cash drawer port  | String: "BT:DK-AirCash" |
 
 ## Port discovery
 The `portDiscovery(type, success, error)` function gets a list of ports where star printers are currently connected.
 
 | Paremeter | Description | Type/Example |
-| type | Port types are: 'All', 'Bluetooth', 'USB', 'LAN' | String |
+| ----------- | -------- | ---------- |
+| type* | Port types are: 'All', 'Bluetooth', 'USB', 'LAN' | String |
 
 ## Connect
 The `connect(printerPort, drawerPort, function(err,res){})` function allows to 'connect' to the peripheral (s), to keep alive the connection between the device and the peripherals (s).
@@ -70,7 +74,7 @@ The `connect(printerPort, drawerPort, function(err,res){})` function allows to '
 | ----------- | -------- | ---------- |
 | printerPort | The printer port  | String: "BT:9100" |
 | drawerPort | The cash drawer port  | String: "BT:DK-AirCash" |
-| callback | A callback function | function(err, res){} |
+| callback* | A callback function | function(err, res){} |
 
 Example:
 ```javascript
@@ -87,8 +91,9 @@ starprnt.connect(undefined,"BT:DK-AirCash",function(err,res){});
 The `printFormattedReceipt(port, JSON.stringify(receipt), success, error)` function allows to print a receipt on a predefined format with 3 sections (header, body and footer), each section with multiple **optional** parameters.
 
 | Parameter | Description | Type/Example |
-| port | The printer port  | String: "BT:9100" |
-| receipt | The formatted (as JSON) receipt. **Remember to send it as a string with JSON.stringify()**  | String (see example below) |
+| ----------- | -------- | ---------- |
+| port* | The printer port  | String: "BT:9100" |
+| receipt* | The formatted (as JSON) receipt. **Remember to send it as a string with JSON.stringify()**  | String (see example below) |
 
 Receipt parameter JSON description:
 1. International: Sets the international for the entire receipt, options are:
@@ -167,8 +172,8 @@ The `printTicket(port, ticket, success, error)` function allows to print a given
 
 | Parameter | Description | Type/Example |
 | ----------- | -------- | ---------- |
-| port | The printer port  | String: "BT:9100" |
-| ticket | The formatted (as JSON) ticket. **Remember to send it as a string with JSON.stringify()** | String (see example below) |
+| port* | The printer port  | String: "BT:9100" |
+| ticket* | The formatted (as JSON) ticket. **Remember to send it as a string with JSON.stringify()** | String (see example below) |
 
 Ticket parameter JSON description:
 1. font: The font for the entire receipt, options are: 
@@ -214,33 +219,33 @@ JSON example:
 ```
 
 ## Print Data
-The `printData(port, text, success, error)
+The `printData(port, text, success, error)` function, prints a given text to the printer of the given port.
 
 | Parameter | Description | Type/Example |
 | ----------- | -------- | ---------- |
-| port | The printer port  | String: "BT:9100" |
-| text | The text to be printed | String: "Star Clothing Boutique\n123 Star Road\nCity, State 12345\n" |
+| port* | The printer port  | String: "BT:9100" |
+| text* | The text to be printed | String: "Star Clothing Boutique\n123 Star Road\nCity, State 12345\n" |
 
 ## Activate Black Mark Sensor
 The `activateBlackMarkSensor(port, success, error)` function, activates the black mark sensor in the printer.
 
 | Parameter | Description | Type/Example |
 | ----------- | -------- | ---------- |
-| port | The printer port  | String: "BT:9100" |
+| port* | The printer port  | String: "BT:9100" |
 
 ## Cancel Black Mark Sensor
 The `cancelBlackMarkSensor(port, success, error)` function, deactivates the black mark sensor in the printer.
 
 | Parameter | Description | Type/Example |
 | ----------- | -------- | ---------- |
-| port | The printer port  | String: "BT:9100" |
+| port* | The printer port  | String: "BT:9100" |
 
 ## Set Default Settings
 The `setDefaultSettings(port, success, error)` resets the printer to default settings.
 
 | Parameter | Description | Type/Example |
 | ----------- | -------- | ---------- |
-| port | The printer port  | String: "BT:9100" |
+| port* | The printer port  | String: "BT:9100" |
 
 ## Hard Reset
 The `hardReset(port, success, error)` function, resets (doesn't change configurations) the printer and executes a self print.
@@ -254,8 +259,8 @@ The `printReceipt(port, receipt, success, error, receiptId, alignment, internati
 
 | Parameter | Description | Type/Example |
 | ----------- | -------- | ---------- |
-| port | The printer port  | String: "BT:9100" |
-| receipt | The text to be printed. | String: "Star Clothing Boutique\n123 Star Road\nCity, State 12345\n" |
+| port* | The printer port  | String: "BT:9100" |
+| receipt* | The text to be printed. | String: "Star Clothing Boutique\n123 Star Road\nCity, State 12345\n" |
 | receiptId | Text to be printed as QR code at the end of the receipt. Null or undefined will avoid printing QR code | String: "R-12322" |
 | alignment | Alignment of the text, options are: left, center, right | String: "center" |
 | international | The international character mode, options are: US, FR, UK | String: "US" |
