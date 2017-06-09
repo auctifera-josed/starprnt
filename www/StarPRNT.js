@@ -34,6 +34,9 @@ module.exports = {
     hardReset: function(port, success, error) {
         exec(success, error, "StarPRNT", "hardReset", [port]);
     },
+    disconnect: function (success, error) {
+        exec(success, error, "StarPRNT", "disconnect", []);
+    },
     connect: function (printerPort, drawerPort, callback) {
         var connected = false;
         exec(function (result) {

@@ -12,6 +12,14 @@
 
 static NSString *dataCallbackId = nil;
 
+- (void)disconnect:(CDVInvokedUrlCommand *)command {
+    [self.commandDelegate runInBackground:^{
+        if (_printerManager != nil && _printerManager.port != nil) {
+            [_printerManager disconnect];
+        }
+    }];
+}
+
 - (void)connect:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
             NSString *printerPort = nil,
@@ -21,7 +29,7 @@ static NSString *dataCallbackId = nil;
             printerPort = [command.arguments objectAtIndex:0];
             drawerPort = [command.arguments objectAtIndex:1];
         }
-        
+
         if (printerPort != nil && printerPort != (id)[NSNull null]){
             _printerManager = [[StarIoExtManager alloc] initWithType:StarIoExtManagerTypeStandard
                                                               portName:printerPort
@@ -44,9 +52,9 @@ static NSString *dataCallbackId = nil;
             [_printerManager disconnect];
         }
 
-        if (_drawerManager.port != nil) {
-            [_drawerManager disconnect];
-        }
+        // if (_drawerManager.port != nil) {
+        //     [_drawerManager disconnect];
+        // }
         
         if (_printerManager != nil){
             [_printerManager connect];
@@ -58,6 +66,7 @@ static NSString *dataCallbackId = nil;
 
         dataCallbackId = command.callbackId;
         CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        // CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:[_printerManager connect]];
         [result setKeepCallbackAsBool:YES];
         [self.commandDelegate sendPluginResult:result callbackId:dataCallbackId];
     }];
@@ -321,10 +330,18 @@ static NSString *dataCallbackId = nil;
             }
             [builder appendLineFeed:2];
             if (transaction_id){
-                if ([receipt[@"barcode"] boolValue])
-                    [builder appendBarcodeDataWithAlignment:[transaction_id dataUsingEncoding:encoding] symbology:SCBBarcodeSymbologyCode39 width:SCBBarcodeWidthMode1 height:40 hri:YES position:SCBAlignmentPositionCenter];
-                else
-                    [builder appendData:[transaction_id dataUsingEncoding:encoding]];
+                [builder appendAlignment:SCBAlignmentPositionCenter];
+                if ([receipt[@"barcode"] boolValue]){
+                    if ([receipt[@"barcode_type"] isEqualToString:@"Code39"]){
+                        [builder appendBarcodeData:[transaction_id dataUsingEncoding:encoding] symbology:SCBBarcodeSymbologyCode39 width:SCBBarcodeWidthMode1 height:40 hri:YES];
+                    } else if ([receipt[@"barcode_type"] isEqualToString:@"QR"]) {
+                        [builder appendQrCodeData:[transaction_id dataUsingEncoding:encoding] model:SCBQrCodeModelNo2 level:SCBQrCodeLevelL cell:[receipt[@"barcode_cell_size"] intValue]];
+                        [builder appendLineFeed:1];
+                        [builder appendDataWithLineFeed:[transaction_id dataUsingEncoding:encoding]];
+                    }
+                } else {
+                    [builder appendDataWithLineFeed:[transaction_id dataUsingEncoding:encoding]];
+                }
             }
             [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
             [builder endDocument];
@@ -397,9 +414,9 @@ static NSString *dataCallbackId = nil;
             // [builder appendAlignment:SCBAlignmentPositionCenter];
             [builder appendBytes:barcodeLeftMargin length:sizeof(barcodeLeftMargin)];
             [builder appendDataWithLineFeed:[ticket[@"type_abbr"] dataUsingEncoding:encoding]];
-            if ([ticket[@"barcode_type"] isEqualToString:@"1D"])
+            if ([ticket[@"barcode_type"] isEqualToString:@"Code39"])
                 [builder appendBarcodeData:[ticket[@"ticket_id"] dataUsingEncoding:encoding] symbology:SCBBarcodeSymbologyCode39 width:SCBBarcodeWidthMode1 height:[ticket[@"barcode_cell_size"] intValue] hri:YES];
-            else{
+            else if ([ticket[@"barcode_type"] isEqualToString:@"QR"]) {
                 [builder appendQrCodeData:[ticket[@"ticket_id"] dataUsingEncoding:encoding] model:SCBQrCodeModelNo2 level:SCBQrCodeLevelL cell:[ticket[@"barcode_cell_size"] intValue]];
                 [builder appendLineFeed:1];
                 [builder appendDataWithLineFeed:[ticket[@"ticket_id"] dataUsingEncoding:encoding]];
@@ -567,6 +584,60 @@ static NSString *dataCallbackId = nil;
         [self sendData:@"printerPaperReady" data:nil];
     }];
 }
+
+#pragma mark -
+#pragma mark Cash drawer events
+#pragma mark -
+
+-(void)didCashDrawerOpen {
+    [self.commandDelegate runInBackground:^{
+        [self sendData:@"cashDrawerOpen" data:nil];
+    }];
+}
+-(void)didCashDrawerClose {
+    [self.commandDelegate runInBackground:^{
+        [self sendData:@"cashDrawerClose" data:nil];
+    }];
+}
+
+// - (void)onAppTerminate
+// {
+//     NSLog(@"%@ onAppTerminate!", [self class]);
+//     if (_drawerManager != nil && _drawerManager.port != nil) {
+//         [_drawerManager disconnect];
+//     }
+
+//     if (_printerManager != nil && _printerManager.port != nil) {
+//         [_printerManager disconnect];
+//     }
+// }
+
+// - (void)onMemoryWarning
+// {
+//     NSLog(@"%@ onMemoryWarning!", [self class]);
+// }
+
+// - (void)onReset
+// {
+//     NSLog(@"%@ onReset!", [self class]);
+// }
+
+// - (void)onPause
+// {
+//     NSLog(@"%@ onReset!", [self class]);
+// }
+
+// - (void)dispose
+// {
+//     NSLog(@"%@ dispose!", [self class]);
+//     if (_drawerManager != nil && _drawerManager.port != nil) {
+//         [_drawerManager disconnect];
+//     }
+
+//     if (_printerManager != nil && _printerManager.port != nil) {
+//         [_printerManager disconnect];
+//     }
+// }
 
 #pragma mark -
 #pragma mark Util

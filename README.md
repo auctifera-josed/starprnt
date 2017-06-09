@@ -33,15 +33,16 @@ starprnt.openCashDrawer("BT:DK-AirCash",q,q);
 # API Reference
 - [portDiscovery(type, success, error)](#port-discovery)
 - [connect(printerPort, drawerPort, callback)](#connect)
+- [disconnect(success, error)](#disconnect)
 - [printFormattedReceipt(port, receipt, success, error)](#print-formatted-receipt)
 - [printTicket(port, ticket, success, error)](#print-ticket)
-- [printData(port, text, success, error)](#print-data)
+- [printReceipt(port, receipt, success, error[, receiptId, alignment, international, font])](#print-receipt)
+- [openCashDrawer(port, success, error)](#open-cash-drawer)
 - [activateBlackMarkSensor(port, success, error)](#activate-black-mark-sensor)
 - [cancelBlackMarkSensor(port, success, error)](#cancel-black-mark-sensor)
 - [setDefaultSettings(port, success, error)](#set-default-settings)
 - [hardReset(port, success, error)](#hard-reset)
-- [printReceipt(port, receipt, success, error[, receiptId, alignment, international, font])](#print-receipt)
-- [openCashDrawer(port, success, error)](#open-cash-drawer)
+- [printData(port, text, success, error)](#print-data)
 
 # Functions
 Almost all the methods take success an error functions as parameters, this are callback functions to execute in either case. They are not listed in the parameters for simplicity.
@@ -85,7 +86,13 @@ starprnt.connect(undefined,"BT:DK-AirCash",function(err,res){});
 
 **Notes:**
 - You need to connect before printing out
-- You should call this function on app resume event
+- You should call this function on app **resume** event
+
+## Disconnect
+The `disconnect(success, error)` function allows to disconnect (i.e. close the connection to the peripherals), this is useful to avoid keeping alive a connection when not in the app.
+
+**Notes:**
+- You should call this function on app **pause** event
 
 ## Print formatted receipt
 The `printFormattedReceipt(port, JSON.stringify(receipt), success, error)` function allows to print a receipt on a predefined format with 3 sections (header, body and footer), each section with multiple **optional** parameters.
@@ -103,6 +110,10 @@ Receipt parameter JSON description:
 2. paper_inches: not yet implemented (will be use to support different paper size)
 3. transaction_id: The receipt ID to be printed center-bottom of the receipt
 4. barcode: Boolean value to indicate if the transaction_id should be displayed with a barcode
+5. barcode_type: The type of barcode to print, options are:
+    - QR (2D)
+    - Code39 (1D)
+5. barcode_cell_size: When using QR (2D), this is the size of the QR code
 5. font: The font for the entire receipt, options are: 
     - A
     - B (currently font B has weird behaviour due to different width)
@@ -124,6 +135,8 @@ JSON example:
   "paper_inches": 3, /*For future development*/
   "transaction_id": "P-1235667",
   "barcode": true,
+  "barcode_type":"QR",
+  "barcode_cell_size": 8,
   "font": "A",
   "header": {
     "company_name": "Veevart",
@@ -168,7 +181,7 @@ JSON example:
 ```
 
 ## Print ticket
-The `printTicket(port, ticket, success, error)` function allows to print a given ticket previously formatted, it supports some customizations.
+The `printTicket(port, JSON.stringify(ticket), success, error)` function allows to print a given ticket previously formatted, it supports some customizations.
 
 | Parameter | Description | Type/Example |
 | ----------- | -------- | ---------- |
@@ -182,9 +195,10 @@ Ticket parameter JSON description:
 2. margin: //Uses the left edge as a standard to set the left margin as (current ANK character pitch x n).
     2. left: n; 
     2. right: n;
-3. barcode_type: options are:
-    - 1D
-    - 2D
+3. barcode_type: The type of barcode to print, options are:
+    - QR (2D)
+    - Code39 (1D)
+3. barcode_cell_size: When using QR (2D), this is the size of the QR code
 4. space_to_removable: lines from address to removable
 5. space_to_address: lines from date to address
 
@@ -200,7 +214,7 @@ JSON example:
   "type_abbr": "RE",
   "ticket_id": "R-123123",
   "barcode_left_margin": 8,
-  "barcode_type": "2D",
+  "barcode_type": "QR",
   "barcode_cell_size": 8,
   "website": "www.veevart.com",
   "space_to_removable": 3,
@@ -266,9 +280,10 @@ The `printReceipt(port, receipt, success, error, receiptId, alignment, internati
 | international | The international character mode, options are: US, FR, UK | String: "US" |
 | font | Font style, options are: A (12 x 24 dots), B (9 x 24 dots) | String: "A" |
 
-# Printer events
+# Events
 Listen to printer events as cases of the **starPrntData** event, cases are:
 
+## Printer Events
 - Printer cover open: printerCoverOpen
 - Printer cover close: printerCoverClose
 - Printer impossible: printerImpossible
@@ -277,6 +292,10 @@ Listen to printer events as cases of the **starPrntData** event, cases are:
 - Printer paper empty: printerPaperEmpty
 - Printer paper near empty: printerPaperNearEmpty
 - Printer paper ready: printerPaperReady
+
+## Cash Drawer Events
+- Cash drawer open: cashDrawerOpen
+- Cash drawer close: cashDrawerClose
 
 ```javascript
 window.addEventListener('starPrntData', function (e) {

@@ -30,6 +30,7 @@
 - (void)setToDefaultSettings:(CDVInvokedUrlCommand *)command;
 // - (void)setPrintDirection:(CDVInvokedUrlCommand *)command;Not supported in TSP700II
 - (void)connect:(CDVInvokedUrlCommand *)command;
+- (void)disconnect:(CDVInvokedUrlCommand *)command;
 - (void)hardReset:(CDVInvokedUrlCommand *)command;
 - (void)openCashDrawer:(CDVInvokedUrlCommand *)command;
 
