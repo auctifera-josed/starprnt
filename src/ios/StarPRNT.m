@@ -17,6 +17,9 @@ static NSString *dataCallbackId = nil;
         if (_printerManager != nil && _printerManager.port != nil) {
             [_printerManager disconnect];
         }
+        if (_drawerManager != nil && _drawerManager.port != nil) {
+            [_drawerManager disconnect];
+        }
     }];
 }
 
