@@ -1,0 +1,29 @@
+{
+    "name": "cordova-plugin-starprnt",
+    "version": "0.0.2",
+    "description": "StarPRNT Plugin",
+    "types": "./types/index.d.ts",
+    "cordova": {
+      "id": "cordova-plugin-starprnt",
+      "platforms": [
+        "ios"
+      ]
+    },
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/auctifera-josed/starprnt"
+    },
+    "keywords": [
+      "cordova",
+      "startPRNT",
+      "ecosystem:cordova",
+      "cordova-ios"
+    ],
+    "scripts": {
+      "test": "npm run jshint",
+      "jshint": "node node_modules/jshint/bin/jshint www && node node_modules/jshint/bin/jshint src && node node_modules/jshint/bin/jshint tests"
+    },
+    "author": "Veevart"
+    
+  }
+  
