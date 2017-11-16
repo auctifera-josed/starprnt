@@ -63,7 +63,7 @@ static NSString const *kSMNickName = @"Nick Name";
  *  Do not execute this method when printing data or opening the drawer.
  *  Execute 'stopScan' method to stop scanning BLE device before printing data or opening the drawer.
  *
- *  @param  Sampling number of RSSI
+ *  @param  samplingNumber Sampling number of RSSI
  *  @return NO if calibrateActionArea is alive or duplicate execution with 'startScan' or 'calibrateActionArea'.
  */
 - (BOOL)startScan:(NSUInteger)samplingNumber;
@@ -79,8 +79,8 @@ static NSString const *kSMNickName = @"Nick Name";
  *
  *  @param portName     Identifies the printer to use.
  *  @param portSettings The settings for the port.
- *  @param withDrawer   Presence/absence of a cash drawer.
- *  @param dongleMACAddr      MAC address of Star BLE dongle.
+ *  @param useDrawer    Presence/absence of a cash drawer.
+ *  @param MACAddr      MAC address of Star BLE dongle.
  *  @param Threshold    Threashold value of RSSI in dBm.
  *  @param nickName     Nick name to connect the Star BLE device and the POS Printer.
  *
@@ -93,7 +93,7 @@ static NSString const *kSMNickName = @"Nick Name";
  *
  *  @param portName     Identifies the DK-AirCash to use.
  *  @param portSettings The settings for the port.
- *  @param dongleMACAddr      MAC address of Star BLE dongle.
+ *  @param MACAddr      MAC address of Star BLE dongle.
  *  @param Threshold    Threashold value of RSSI in dBm.
  *  @param nickName     Nick name to connect the Star BLE device and the DK-AirCash.
  *

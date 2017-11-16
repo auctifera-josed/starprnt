@@ -9,6 +9,12 @@
 #import <Foundation/Foundation.h>
 
 #import "ISCBBuilder.h"
+#import "ISDCBBuilder.h"
+#import "ISSCBBuilder.h"
+
+#import "ISCPConnectParser.h"
+
+#import "ISSCPWeightParser.h"
 
 typedef NS_ENUM(NSInteger, StarIoExtEmulation) {     // Don't insert!
     StarIoExtEmulationNone = 0,
@@ -17,7 +23,8 @@ typedef NS_ENUM(NSInteger, StarIoExtEmulation) {     // Don't insert!
     StarIoExtEmulationStarGraphic,
     StarIoExtEmulationEscPos,
     StarIoExtEmulationEscPosMobile,
-    StarIoExtEmulationStarDotImpact
+    StarIoExtEmulationStarDotImpact,
+    StarIoExtEmulationStarPRNTL
 };
 
 typedef NS_ENUM(NSInteger, StarIoExtCharacterCode) {     // Don't insert!
@@ -28,14 +35,45 @@ typedef NS_ENUM(NSInteger, StarIoExtCharacterCode) {     // Don't insert!
     StarIoExtCharacterCodeTraditionalChinese
 };
 
+typedef NS_ENUM(NSInteger, StarIoExtBcrModel) {     // Don't insert!
+    StarIoExtBcrModelNone = 0,
+    StarIoExtBcrModelPOP1
+};
+
+typedef NS_ENUM(NSInteger, StarIoExtDisplayModel) {     // Don't insert!
+    StarIoExtDisplayModelNone = 0,
+    StarIoExtDisplayModelSCD222
+};
+
+typedef NS_ENUM(NSInteger, StarIoExtScaleModel) {     // Don't insert!
+    StarIoExtScaleModelNone = 0,
+    StarIoExtScaleModelAPS10,
+    StarIoExtScaleModelAPS12,
+    StarIoExtScaleModelAPS20
+};
+
 @interface StarIoExt : NSObject
 
-// Generic.
+#pragma mark - Generic
 
 + (NSString *)description;
 
-// Command Builder.
+#pragma mark - Builder
 
 + (ISCBBuilder *)createCommandBuilder:(StarIoExtEmulation)emulation;
+
++ (ISDCBBuilder *)createDisplayCommandBuilder:(StarIoExtDisplayModel)model;
+
++ (ISSCBBuilder *)createScaleCommandBuilder:(StarIoExtScaleModel)model;
+
+#pragma mark - Parser
+
++ (ISCPConnectParser *)createBcrConnectParser:(StarIoExtBcrModel)model;
+
++ (ISCPConnectParser *)createDisplayConnectParser:(StarIoExtDisplayModel)model;
+
++ (ISCPConnectParser *)createScaleConnectParser:(StarIoExtScaleModel)model;
+
++ (ISSCPWeightParser *)createScaleWeightParser:(StarIoExtScaleModel)model;
 
 @end

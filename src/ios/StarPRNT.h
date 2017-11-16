@@ -18,7 +18,6 @@
 @interface StarPRNT : CDVPlugin <StarIoExtManagerDelegate> {}
 
 @property (nonatomic) StarIoExtManager *printerManager;
-@property (nonatomic) StarIoExtManager *drawerManager;
 
 - (void)portDiscovery:(CDVInvokedUrlCommand *)command;
 - (void)printData:(CDVInvokedUrlCommand *)command;

@@ -17,20 +17,15 @@ static NSString *dataCallbackId = nil;
         if (_printerManager != nil && _printerManager.port != nil) {
             [_printerManager disconnect];
         }
-        if (_drawerManager != nil && _drawerManager.port != nil) {
-            [_drawerManager disconnect];
-        }
     }];
 }
 
 - (void)connect:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
-            NSString *printerPort = nil,
-                 *drawerPort = nil;
+            NSString *printerPort = nil;
         
         if (command.arguments.count > 0) {
             printerPort = [command.arguments objectAtIndex:0];
-            drawerPort = [command.arguments objectAtIndex:1];
         }
 
         if (printerPort != nil && printerPort != (id)[NSNull null]){
@@ -42,29 +37,12 @@ static NSString *dataCallbackId = nil;
             _printerManager.delegate = self;
         }
 
-        if (drawerPort != nil && drawerPort != (id)[NSNull null]){
-            _drawerManager = [[StarIoExtManager alloc] initWithType:StarIoExtManagerTypeStandard
-                                                              portName:drawerPort
-                                                          portSettings:@""
-                                                       ioTimeoutMillis:10000];
-            
-            _drawerManager.delegate = self;
-        }
-
         if (_printerManager.port != nil) {
             [_printerManager disconnect];
         }
 
-        // if (_drawerManager.port != nil) {
-        //     [_drawerManager disconnect];
-        // }
-        
         if (_printerManager != nil){
             [_printerManager connect];
-        }
-
-        if (_drawerManager != nil){
-            [_drawerManager connect];
         }
 
         dataCallbackId = command.callbackId;
@@ -114,64 +92,51 @@ static NSString *dataCallbackId = nil;
 
 - (void)openCashDrawer:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
-        StarIoExtEmulation emulation = StarIoExtEmulationStarLine;
-        ISCBBuilder *builder = [StarIoExt createCommandBuilder:emulation];
-        NSString *portName = nil;
-
-        if (command.arguments.count > 0) {
-            portName = [command.arguments objectAtIndex:0];
-        }        
-
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:StarIoExtEmulationStarLine];
+        
         [builder beginDocument];
         
         [builder appendPeripheral:SCBPeripheralChannelNo1];
         [builder appendPeripheral:SCBPeripheralChannelNo2];
         
         [builder endDocument];
-        [self sendCommand2:[builder.commands copy] portName:portName callbackId:command.callbackId];
+        [self sendCommand:[builder.commands copy] callbackId:command.callbackId];
     }];
 }
 
 - (void)printRawData:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
-        StarIoExtEmulation emulation = StarIoExtEmulationStarLine;
-        ISCBBuilder *builder = [StarIoExt createCommandBuilder:emulation];
-        NSStringEncoding encoding = NSWindowsCP1252StringEncoding;
-        NSString *portName = nil;
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:StarIoExtEmulationStarLine];
         NSString *content = nil;
         
         if (command.arguments.count > 0) {
-            portName = [command.arguments objectAtIndex:0];
-            content = [command.arguments objectAtIndex:1];
+            content = [command.arguments objectAtIndex:0];
         }        
-        // unsigned char leftMargin[] = {0x1B, 0x6C, 0x4};
         
-        // [builder appendBytes:leftMargin length:sizeof(leftMargin)];
-        [builder appendData:[content dataUsingEncoding:encoding]];
-        // [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
-        [self sendCommand:[builder.commands copy] portName:portName callbackId:command.callbackId];
+        [builder appendData:[content dataUsingEncoding:NSWindowsCP1252StringEncoding]];
+        [builder appendPeripheral:SCBPeripheralChannelNo1];
+        [builder appendPeripheral:SCBPeripheralChannelNo2];
+        
+        [self sendCommand:[builder.commands copy] callbackId:command.callbackId];
     }];
 }
 
 - (void)printData:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
-        StarIoExtEmulation emulation = StarIoExtEmulationStarLine;
         SCBAlignmentPosition alignment = SCBAlignmentPositionCenter;
         SCBInternationalType international = SCBInternationalTypeUSA;
         SCBFontStyleType fontStyle = SCBFontStyleTypeA;
         NSStringEncoding encoding = NSWindowsCP1252StringEncoding;
-        NSString *portName = nil;
         NSString *content = nil;
         NSString *receiptid = nil;
-        ISCBBuilder *builder = [StarIoExt createCommandBuilder:emulation];
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:StarIoExtEmulationStarLine];
         
         if (command.arguments.count > 0) {
-            portName = [command.arguments objectAtIndex:0];
-            content = [command.arguments objectAtIndex:1];
-            receiptid = [command.arguments objectAtIndex:2];
-            alignment = [self getAlignment:[command.arguments objectAtIndex:3]];
-            international = [self getInternational:[command.arguments objectAtIndex:4]];
-            fontStyle = [self getFont:[command.arguments objectAtIndex:5]];
+            content = [command.arguments objectAtIndex:0];
+            receiptid = [command.arguments objectAtIndex:1];
+            alignment = [self getAlignment:[command.arguments objectAtIndex:2]];
+            international = [self getInternational:[command.arguments objectAtIndex:3]];
+            fontStyle = [self getFont:[command.arguments objectAtIndex:4]];
         }
         
         [builder beginDocument];
@@ -184,24 +149,23 @@ static NSString *dataCallbackId = nil;
         if (receiptid)
             [builder appendQrCodeDataWithAlignment:[receiptid dataUsingEncoding:encoding] model:SCBQrCodeModelNo2 level:SCBQrCodeLevelQ cell:6 position:SCBAlignmentPositionCenter];
         [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
+        [builder appendPeripheral:SCBPeripheralChannelNo1];
+        [builder appendPeripheral:SCBPeripheralChannelNo2];
         [builder endDocument];
 
-        [self sendCommand:[builder.commands copy] portName:portName callbackId:command.callbackId];
+        [self sendCommand:[builder.commands copy] callbackId:command.callbackId];
     }];
 }
 
 - (void)printReceipt:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
-        StarIoExtEmulation emulation = StarIoExtEmulationStarLine;
         NSStringEncoding encoding = NSWindowsCP1252StringEncoding;
-        NSString *portName = nil;
         NSString *content = nil;
-        ISCBBuilder *builder = [StarIoExt createCommandBuilder:emulation];
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:StarIoExtEmulationStarLine];
         
 
         if (command.arguments.count > 0) {
-            portName = [command.arguments objectAtIndex:0];
-            content = [command.arguments objectAtIndex:1];
+            content = [command.arguments objectAtIndex:0];
         }
             
         // NSError * error = nil;
@@ -293,12 +257,16 @@ static NSString *dataCallbackId = nil;
                 }
             }
             [builder appendLineFeed:1];
-            [builder appendData:[@"Subtotal" dataUsingEncoding:encoding]];
-            [builder appendBytes:twoTabs length:sizeof(twoTabs)];
-            [builder appendDataWithLineFeed:[body[@"subtotal"] dataUsingEncoding:encoding]];
-            [builder appendData:[@"Tax" dataUsingEncoding:encoding]];
-            [builder appendBytes:twoTabs length:sizeof(twoTabs)];
-            [builder appendDataWithLineFeed:[body[@"tax"] dataUsingEncoding:encoding]];
+            if (body[@"subtotal"]){
+                [builder appendData:[@"Subtotal" dataUsingEncoding:encoding]];
+                [builder appendBytes:twoTabs length:sizeof(twoTabs)];
+                [builder appendDataWithLineFeed:[body[@"subtotal"] dataUsingEncoding:encoding]];
+            }
+            if (body[@"tax"]) {
+                [builder appendData:[@"Tax" dataUsingEncoding:encoding]];
+                [builder appendBytes:twoTabs length:sizeof(twoTabs)];
+                [builder appendDataWithLineFeed:[body[@"tax"] dataUsingEncoding:encoding]];
+            }
             [builder appendData:[@"Total" dataUsingEncoding:encoding]];
             unsigned char setHorizontalTab2[] = {0x1b, 0x44, 0x7, 0x22, 0x00};
             [builder appendBytes:setHorizontalTab2 length:sizeof(setHorizontalTab2)];
@@ -347,29 +315,28 @@ static NSString *dataCallbackId = nil;
                 }
             }
             [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
+            [builder appendPeripheral:SCBPeripheralChannelNo1];
+            [builder appendPeripheral:SCBPeripheralChannelNo2];    
             [builder endDocument];
         } else {
             [builder beginDocument];
-            [builder appendDataWithLineFeed:[@"The given string isn't formatted correctly\nRemember to send a stringified JSON" dataUsingEncoding:encoding]];
+            [builder appendDataWithLineFeed:[@"The string isn't formatted correctly\nRemember to send a stringified JSON" dataUsingEncoding:encoding]];
             [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
             [builder endDocument];
         }
 
-        [self sendCommand:[builder.commands copy] portName:portName callbackId:command.callbackId];
+        [self sendCommand:[builder.commands copy] callbackId:command.callbackId];
     }];
 }
 
 - (void)printTicket:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
-        StarIoExtEmulation emulation = StarIoExtEmulationStarLine;
         NSStringEncoding encoding = NSWindowsCP1252StringEncoding;
-        ISCBBuilder *builder = [StarIoExt createCommandBuilder:emulation];
-        NSString *portName = nil;
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:StarIoExtEmulationStarLine];
         NSString *content = nil;
         
         if (command.arguments.count > 0) {
-            portName = [command.arguments objectAtIndex:0];
-            content = [command.arguments objectAtIndex:1];
+            content = [command.arguments objectAtIndex:0];
         }
             
         // NSError * error = nil;
@@ -425,16 +392,18 @@ static NSString *dataCallbackId = nil;
                 [builder appendDataWithLineFeed:[ticket[@"ticket_id"] dataUsingEncoding:encoding]];
             }
             [builder appendCutPaper:SCBCutPaperActionFullCutWithFeed];
+            [builder appendPeripheral:SCBPeripheralChannelNo1];
+            [builder appendPeripheral:SCBPeripheralChannelNo2];    
             [builder endDocument];
             
         } else { //Not JSON
             [builder beginDocument];
-            [builder appendData:[@"The given string isn't formatted correctly\nRemember to send a stringified JSON" dataUsingEncoding:encoding]];
+            [builder appendData:[@"The string isn't formatted correctly\nRemember to send a stringified JSON" dataUsingEncoding:encoding]];
             [builder appendLineFeed:1];
             [builder appendCutPaper:SCBCutPaperActionFullCutWithFeed];
             // [builder endDocument];
         }
-        [self sendCommand:[builder.commands copy] portName:portName callbackId:command.callbackId];
+        [self sendCommand:[builder.commands copy] callbackId:command.callbackId];
     }];
 }
 
@@ -442,18 +411,12 @@ static NSString *dataCallbackId = nil;
 
 - (void)hardReset:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
-        StarIoExtEmulation emulation = StarIoExtEmulationStarLine;
-        ISCBBuilder *builder = [StarIoExt createCommandBuilder:emulation];
-        NSString *portName = nil;
-
-        if (command.arguments.count > 0) {
-            portName = [command.arguments objectAtIndex:0];
-        }   
-
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:StarIoExtEmulationStarLine];
+        
         unsigned char hardReset[] = {0x1B, 0x3F, 0x0A, 0x00};
         [builder appendBytes:hardReset length:sizeof(hardReset)];
         
-        [self sendCommand:[builder.commands copy] portName:portName callbackId:command.callbackId];
+        [self sendCommand:[builder.commands copy] callbackId:command.callbackId];
     }];
 }
 
@@ -474,18 +437,12 @@ static NSString *dataCallbackId = nil;
 //     [builder appendBytes:setPageMode length:sizeof(setPageMode)];
 //     [builder appendBytes:setDirection length:sizeof(setDirection)];
     
-//     [self sendCommand:[builder.commands copy] portName:portName callbackId:command.callbackId];
+//     [self sendCommand:[builder.commands copy] callbackId:command.callbackId];
 // }
 
 - (void)activateBlackMarkSensor:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
-        StarIoExtEmulation emulation = StarIoExtEmulationStarLine;
-        ISCBBuilder *builder = [StarIoExt createCommandBuilder:emulation];
-        NSString *portName = nil;
-        
-        if (command.arguments.count > 0) {
-            portName = [command.arguments objectAtIndex:0];
-        }        
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:StarIoExtEmulationStarLine];
         
         unsigned char setBit[] = {0x1B, 0x1D, 0x23, 0x2B, 0x31, 0x30, 0x31, 0x30, 0x30, 0x0A, 0x00};
         unsigned char writeReset[] = {0x1B, 0x1D, 0x23, 0x57, 0x30, 0x30, 0x30, 0x30, 0x30, 0x0A, 0x00};
@@ -493,47 +450,35 @@ static NSString *dataCallbackId = nil;
         [builder appendBytes:setBit length:sizeof(setBit)];
         [builder appendBytes:writeReset length:sizeof(writeReset)];
         
-        [self sendCommand:[builder.commands copy] portName:portName callbackId:command.callbackId];
+        [self sendCommand:[builder.commands copy] callbackId:command.callbackId];
     }];
 }
 
 - (void)cancelBlackMarkSensor:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
-        StarIoExtEmulation emulation = StarIoExtEmulationStarLine;
-        ISCBBuilder *builder = [StarIoExt createCommandBuilder:emulation];
-        NSString *portName = nil;
-
-        if (command.arguments.count > 0) {
-            portName = [command.arguments objectAtIndex:0];
-        } 
-
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:StarIoExtEmulationStarLine];
+        
         unsigned char clearBit[] = {0x1B, 0x1D, 0x23, 0x2D, 0x31, 0x30, 0x31, 0x30, 0x30, 0x0A, 0x00};
         unsigned char writeReset[] = {0x1B, 0x1D, 0x23, 0x57, 0x30, 0x30, 0x30, 0x30, 0x30, 0x0A, 0x00};
             
         [builder appendBytes:clearBit length:sizeof(clearBit)];
         [builder appendBytes:writeReset length:sizeof(writeReset)];
 
-        [self sendCommand:[builder.commands copy] portName:portName callbackId:command.callbackId];
+        [self sendCommand:[builder.commands copy] callbackId:command.callbackId];
     }];
 }
 
 - (void)setToDefaultSettings:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
-        StarIoExtEmulation emulation = StarIoExtEmulationStarLine;
-        ISCBBuilder *builder = [StarIoExt createCommandBuilder:emulation];
-        NSString *portName = nil;
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:StarIoExtEmulationStarLine];
         
-        if (command.arguments.count > 0) {
-            portName = [command.arguments objectAtIndex:0];
-        } 
-
         unsigned char defaultSettings[] = {0x1B, 0x1D, 0x23, 0x2A, 0x30, 0x30, 0x30, 0x30, 0x30, 0x0A, 0x00};
         unsigned char writeReset[] = {0x1B, 0x1D, 0x23, 0x57, 0x30, 0x30, 0x30, 0x30, 0x30, 0x0A, 0x00};
          
         [builder appendBytes:defaultSettings length:sizeof(defaultSettings)];
         [builder appendBytes:writeReset length:sizeof(writeReset)];
         
-        [self sendCommand:[builder.commands copy] portName:portName callbackId:command.callbackId];   
+        [self sendCommand:[builder.commands copy] callbackId:command.callbackId];   
     }];
 }
 
@@ -653,7 +598,7 @@ static NSString *dataCallbackId = nil;
     return buffer;
 }
 
-- (void)sendCommand:(NSMutableData *)commands portName:(NSString *)portName callbackId:(NSString *)callbackId{
+- (void)sendCommand:(NSMutableData *)commands callbackId:(NSString *)callbackId{
     [self.commandDelegate runInBackground:^{
         BOOL printResult = false;
         
@@ -665,7 +610,10 @@ static NSString *dataCallbackId = nil;
                 [alertView show];
             });
         } else if (_printerManager.port == nil){
-            port = [SMPort getPort:portName :@"" :10000];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Port not found" message:@"Please re connect to the printer, something is not working as expected." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                [alertView show];
+            });
         } else {
             port = [_printerManager port];
         }
@@ -679,36 +627,6 @@ static NSString *dataCallbackId = nil;
         }
 
         CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:printResult];
-        [self.commandDelegate sendPluginResult:result callbackId:callbackId];
-    }];
-}
-
-- (void)sendCommand2:(NSMutableData *)commands portName:(NSString *)portName callbackId:(NSString *)callbackId{
-    [self.commandDelegate runInBackground:^{
-        BOOL drawerResult = false;
-        
-        SMPort *port = nil;
-        
-        if (_drawerManager == nil) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Not connected" message:@"Please connect to the drawer before sending commands." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-                [alertView show];
-            });
-        } else if (_drawerManager.port == nil){
-            port = [SMPort getPort:portName :@"" :10000];
-        } else {
-            port = [_drawerManager port];
-        }
-
-        if (commands != nil && port != nil) {
-            [_drawerManager.lock lock];
-            
-            drawerResult = [Communication sendCommands:commands port:port];
-            
-            [_drawerManager.lock unlock];
-        }
-
-        CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:drawerResult];
         [self.commandDelegate sendPluginResult:result callbackId:callbackId];
     }];
 }

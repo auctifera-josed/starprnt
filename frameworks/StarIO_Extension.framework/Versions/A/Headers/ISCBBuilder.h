@@ -592,19 +592,6 @@ typedef NS_ENUM(NSInteger, SCBBlackMarkType) {
                         diffusion:(BOOL)diffusion
                          position:(SCBAlignmentPosition)position;
 
-#pragma mark - Bitmap(Compression)
-
-- (void)appendBitmapCompression:(UIImage *)image
-                      diffusion:(BOOL)diffusion;
-
-- (void)appendBitmapCompressionWithAbsolutePosition:(UIImage *)image
-                                          diffusion:(BOOL)diffusion
-                                           position:(NSInteger)position;
-
-- (void)appendBitmapCompressionWithAlignment:(UIImage *)image
-                                   diffusion:(BOOL)diffusion
-                                    position:(SCBAlignmentPosition)position;
-
 #pragma mark - BlackMark
 
 - (void)appendBlackMark:(SCBBlackMarkType)type;

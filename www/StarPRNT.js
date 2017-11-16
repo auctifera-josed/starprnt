@@ -1,43 +1,43 @@
 var exec = require('cordova/exec');
 
 module.exports = {
-    openCashDrawer: function (port, success, error) {
-        exec(success, error, "StarPRNT", "openCashDrawer", [port]);
+    openCashDrawer: function (success, error) {
+        exec(success, error, "StarPRNT", "openCashDrawer", []);
     },
-    printReceipt: function (port, receipt, success, error, receiptId, alignment, international, font) {
-        exec(success, error, "StarPRNT", "printData", [port, receipt, receiptId, alignment, international, font]);
+    printReceipt: function (receipt, success, error, receiptId, alignment, international, font) {
+        exec(success, error, "StarPRNT", "printData", [receipt, receiptId, alignment, international, font]);
     },
-    printData: function (port, text, success, error) {
-        exec(success, error, "StarPRNT", "printRawData", [port, text]);
+    printData: function (text, success, error) {
+        exec(success, error, "StarPRNT", "printRawData", [text]);
     },
-    printFormattedReceipt: function(port, receipt, success, error) {
-        exec(success, error, "StarPRNT", "printReceipt", [port, receipt]);
+    printFormattedReceipt: function(receipt, success, error) {
+        exec(success, error, "StarPRNT", "printReceipt", [receipt]);
     },
-    printTicket: function(port, ticket, success, error) {
-        exec(success, error, "StarPRNT", "printTicket", [port, ticket]);
+    printTicket: function(ticket, success, error) {
+        exec(success, error, "StarPRNT", "printTicket", [ticket]);
     },
     portDiscovery: function(type, success, error) {
         exec(success, error, "StarPRNT", "portDiscovery", [type]);
     },
-    activateBlackMarkSensor: function(port, success, error) {
-        exec(success, error, "StarPRNT", "activateBlackMarkSensor", [port]);
+    activateBlackMarkSensor: function(success, error) {
+        exec(success, error, "StarPRNT", "activateBlackMarkSensor", []);
     },
-    cancelBlackMarkSensor: function(port, success, error) {
-        exec(success, error, "StarPRNT", "cancelBlackMarkSensor", [port]);
+    cancelBlackMarkSensor: function(success, error) {
+        exec(success, error, "StarPRNT", "cancelBlackMarkSensor", []);
     },
-    setDefaultSettings: function(port, success, error) {
-        exec(success, error, "StarPRNT", "setToDefaultSettings", [port]);
+    setDefaultSettings: function(success, error) {
+        exec(success, error, "StarPRNT", "setToDefaultSettings", []);
     },
-    // setPrintDirection: function(port, direction, success, error) {
-    //     exec(success, error, "StarPRNT", "setPrintDirection", [port, direction]);
+    // setPrintDirection: function(, direction, success, error) {
+    //     exec(success, error, "StarPRNT", "setPrintDirection", [, direction]);
     // },
-    hardReset: function(port, success, error) {
-        exec(success, error, "StarPRNT", "hardReset", [port]);
+    hardReset: function(success, error) {
+        exec(success, error, "StarPRNT", "hardReset", []);
     },
     disconnect: function (success, error) {
         exec(success, error, "StarPRNT", "disconnect", []);
     },
-    connect: function (printerPort, drawerPort, callback) {
+    connect: function (printerPort, callback) {
         var connected = false;
         exec(function (result) {
             if (!connected) {
@@ -49,7 +49,7 @@ module.exports = {
         },
         function (error) {
             callback(error)
-        }, 'StarPRNT', 'connect', [printerPort, drawerPort]);
+        }, 'StarPRNT', 'connect', [printerPort]);
     }
 };
 
