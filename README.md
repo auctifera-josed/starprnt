@@ -73,12 +73,11 @@ The `portDiscovery(type, success, error)` function gets a list of ports where st
 | type* | Port types are: 'All', 'Bluetooth', 'USB', 'LAN' | String |
 
 ## Connect
-The `connect(printerPort, drawerPort, function(err,res){})` function allows to 'connect' to the peripheral (s), to keep alive the connection between the device and the peripherals (s).
+The `connect(printerPort, function(err,res){})` function allows to 'connect' to the peripheral, to keep alive the connection between the device and the peripheral.
 
 | Parameter | Description | Type/Example |
 | ----------- | -------- | ---------- |
 | printerPort | The printer port  | String: "BT:9100" |
-| drawerPort | The cash drawer port  | String: "BT:DK-AirCash" |
 | callback* | A callback function | function(err, res){} |
 
 Example:
