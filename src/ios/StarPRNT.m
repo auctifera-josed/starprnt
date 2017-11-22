@@ -114,8 +114,6 @@ static NSString *dataCallbackId = nil;
         }        
         
         [builder appendData:[content dataUsingEncoding:NSWindowsCP1252StringEncoding]];
-        [builder appendPeripheral:SCBPeripheralChannelNo1];
-        [builder appendPeripheral:SCBPeripheralChannelNo2];
         
         [self sendCommand:[builder.commands copy] callbackId:command.callbackId];
     }];
@@ -149,8 +147,6 @@ static NSString *dataCallbackId = nil;
         if (receiptid)
             [builder appendQrCodeDataWithAlignment:[receiptid dataUsingEncoding:encoding] model:SCBQrCodeModelNo2 level:SCBQrCodeLevelQ cell:6 position:SCBAlignmentPositionCenter];
         [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
-        [builder appendPeripheral:SCBPeripheralChannelNo1];
-        [builder appendPeripheral:SCBPeripheralChannelNo2];
         [builder endDocument];
 
         [self sendCommand:[builder.commands copy] callbackId:command.callbackId];
@@ -315,8 +311,6 @@ static NSString *dataCallbackId = nil;
                 }
             }
             [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
-            [builder appendPeripheral:SCBPeripheralChannelNo1];
-            [builder appendPeripheral:SCBPeripheralChannelNo2];    
             [builder endDocument];
         } else {
             [builder beginDocument];
@@ -392,8 +386,6 @@ static NSString *dataCallbackId = nil;
                 [builder appendDataWithLineFeed:[ticket[@"ticket_id"] dataUsingEncoding:encoding]];
             }
             [builder appendCutPaper:SCBCutPaperActionFullCutWithFeed];
-            [builder appendPeripheral:SCBPeripheralChannelNo1];
-            [builder appendPeripheral:SCBPeripheralChannelNo2];    
             [builder endDocument];
             
         } else { //Not JSON

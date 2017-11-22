@@ -19,6 +19,8 @@ function onDeviceReady() {
 Cordova: `cordova plugin add https://github.com/auctifera-josed/starprnt`
 Ionic 2+: `ionic cordova plugin add https://github.com/auctifera-josed/starprnt`
 
+**Warning:** when updating you should run first `ionic cordova plugin rm cordova-plugin-starprnt` and then install again
+
 # Example
 
 ```javascript
