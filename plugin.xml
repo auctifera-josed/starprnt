@@ -30,6 +30,8 @@
 	  </config-file>
 		<header-file src="src/ios/Communication.h" />
 		<source-file src="src/ios/Communication.m" />
+		<header-file src="src/ios/GlobalQueueManager.h" />
+		<source-file src="src/ios/GlobalQueueManager.m" />
 		<header-file src="src/ios/StarPRNT.h" />
 		<source-file src="src/ios/StarPRNT.m" />
 	</platform>
