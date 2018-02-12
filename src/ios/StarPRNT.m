@@ -14,11 +14,9 @@ static NSString *dataCallbackId = nil;
 
 - (void)disconnect:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
-        dispatch_async(GlobalQueueManager.sharedManager.serialQueue, ^{
-            if (_printerManager != nil && _printerManager.port != nil) {
-                [_printerManager disconnect];
-            }
-        });
+        if (_printerManager != nil && _printerManager.port != nil) {
+            [_printerManager disconnect];
+        }
     }];
 }
 
@@ -57,14 +55,14 @@ static NSString *dataCallbackId = nil;
 
 - (void)refreshPrinter:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{\
-        dispatch_async(GlobalQueueManager.sharedManager.serialQueue, ^{
-            [_printerManager disconnect];
-            
-            if ([_printerManager connect] == NO) {
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Fail to Open Port." message:@"" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-                [alertView show];
-            }
-        });
+        
+        [_printerManager disconnect];
+        
+        if ([_printerManager connect] == NO) {
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Fail to Open Port." message:@"" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [alertView show];
+        }
+        
         [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK] callbackId:command.callbackId];
     }];
 }
@@ -608,8 +606,9 @@ static NSString *dataCallbackId = nil;
 
 - (void)sendCommand:(NSMutableData *)commands callbackId:(NSString *)callbackId{
     [self.commandDelegate runInBackground:^{
-        // dispatch_async(GlobalQueueManager.sharedManager.serialQueue, ^{
-        //     BOOL printResult = false;
+        
+        
+        // BOOL printResult = false;
         
         //     SMPort *port = nil;
             
@@ -634,28 +633,26 @@ static NSString *dataCallbackId = nil;
                 
         //         [_printerManager.lock unlock];
         //     }
-        // });
 
         if (commands != nil) {
              
             [_printerManager.lock lock];
             
-            dispatch_async(GlobalQueueManager.sharedManager.serialQueue, ^{
-                [Communication sendCommands:commands port:_printerManager.port completionHandler:^(BOOL result, NSString *title, NSString *message) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        // UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:title message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-                        
-                        // [alertView show];
-                        
-                        [_printerManager.lock unlock];
-                        
-                    });
-                }];
-            });
+            [Communication sendCommands:commands port:_printerManager.port completionHandler:^(BOOL result, NSString *title, NSString *message) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    // UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:title message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                    
+                    // [alertView show];
+                    [_printerManager.lock unlock];
+                    
+                });
+            }];
+            [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK] callbackId:callbackId];
+        } else {
+            [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR] callbackId:callbackId];
         }
 
-        CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:printResult];
-        [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+        
     }];
 }
 
