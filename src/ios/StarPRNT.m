@@ -28,6 +28,10 @@ static NSString *dataCallbackId = nil;
             printerPort = [command.arguments objectAtIndex:0];
         }
 
+        if (_printerManager.port != nil) {
+            [_printerManager disconnect];
+        }
+        
         if (printerPort != nil && printerPort != (id)[NSNull null]){
             _printerManager = [[StarIoExtManager alloc] initWithType:StarIoExtManagerTypeStandard
                                                               portName:printerPort
@@ -35,10 +39,6 @@ static NSString *dataCallbackId = nil;
                                                        ioTimeoutMillis:10000];
             
             _printerManager.delegate = self;
-        }
-
-        if (_printerManager.port != nil) {
-            [_printerManager disconnect];
         }
 
         if (_printerManager != nil){
@@ -50,6 +50,19 @@ static NSString *dataCallbackId = nil;
         // CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:[_printerManager connect]];
         [result setKeepCallbackAsBool:YES];
         [self.commandDelegate sendPluginResult:result callbackId:dataCallbackId];
+    }];
+}
+
+- (void)refreshPrinter:(CDVInvokedUrlCommand *)command {
+    [self.commandDelegate runInBackground:^{
+        [_printerManager disconnect];
+        
+        if ([_printerManager connect] == NO) {
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Fail to Open Port." message:@"" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [alertView show];
+        }
+        
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK] callbackId:command.callbackId];
     }];
 }
 

@@ -37,6 +37,9 @@ module.exports = {
     disconnect: function (success, error) {
         exec(success, error, "StarPRNT", "disconnect", []);
     },
+    refreshPrinter: function (success, error) {
+        exec(success, error, "StarPRNT", "refreshPrinter", []);
+    },
     connect: function (printerPort, callback) {
         var connected = false;
         exec(function (result) {
