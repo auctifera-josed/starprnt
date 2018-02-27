@@ -19,6 +19,9 @@ module.exports = {
     portDiscovery: function(type, success, error) {
         exec(success, error, "StarPRNT", "portDiscovery", [type]);
     },
+    checkStatus: function (port, success, error) {
+        exec(success, error, 'StarPRNT', 'checkStatus', [port]);
+    },
     activateBlackMarkSensor: function(success, error) {
         exec(success, error, "StarPRNT", "activateBlackMarkSensor", []);
     },

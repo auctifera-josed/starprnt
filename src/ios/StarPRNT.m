@@ -71,7 +71,7 @@ static NSString *dataCallbackId = nil;
         }
         
         if ([portType isEqualToString:@"All"] || [portType isEqualToString:@"LAN"]) {
-            NSArray *lanPortInfoArray = [SMPort searchPrinter:@"LAN:"];
+            NSArray *lanPortInfoArray = [SMPort searchPrinter:@"TCP:"];
             for (PortInfo *p in lanPortInfoArray) {
                 [info addObject:[self portInfoToDictionary:p]];
             }

@@ -6,6 +6,7 @@
     "cordova": {
       "id": "cordova-plugin-starprnt",
       "platforms": [
+        "android",
         "ios"
       ]
     },
@@ -17,7 +18,8 @@
       "cordova",
       "startPRNT",
       "ecosystem:cordova",
-      "cordova-ios"
+      "cordova-ios",
+      "cordova-android"
     ],
     "scripts": {
       "test": "npm run jshint",
