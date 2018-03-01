@@ -1,6 +1,24 @@
 var exec = require('cordova/exec');
 
 module.exports = {
+
+    //Android and iOS functions
+
+    portDiscovery: function(type, success, error) {
+        exec(success, error, "StarPRNT", "portDiscovery", [type]);
+    },
+    checkStatus: function (port, success, error) {
+        exec(success, error, 'StarPRNT', 'checkStatus', [port, emulation]);
+    },
+    printRawText: function (port, emulation, printObj, success, error) {  //connects to printer and disconnects when done
+        exec(success, error, "StarPRNT", "printRawText", [port, emulation, printObj]);
+    },
+    printRasterReceipt: function (port, emulation, printObj, success, error) {  //connects to printer and disconnects when done
+        exec(success, error, "StarPRNT", "printRasterReceipt", [port, emulation, printObj]);
+    },
+
+// iOS only functions
+
     openCashDrawer: function (success, error) {
         exec(success, error, "StarPRNT", "openCashDrawer", []);
     },
@@ -15,12 +33,6 @@ module.exports = {
     },
     printTicket: function(ticket, success, error) {
         exec(success, error, "StarPRNT", "printTicket", [ticket]);
-    },
-    portDiscovery: function(type, success, error) {
-        exec(success, error, "StarPRNT", "portDiscovery", [type]);
-    },
-    checkStatus: function (port, success, error) {
-        exec(success, error, 'StarPRNT', 'checkStatus', [port]);
     },
     activateBlackMarkSensor: function(success, error) {
         exec(success, error, "StarPRNT", "activateBlackMarkSensor", []);

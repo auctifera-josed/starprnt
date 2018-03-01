@@ -15,6 +15,10 @@ import com.starmicronics.stario.PortInfo;
 import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
 import com.starmicronics.stario.StarPrinterStatus;
+import com.starmicronics.starioextension.StarIoExt;
+import com.starmicronics.starioextension.StarIoExt.Emulation;
+import com.starmicronics.starioextension.ICommandBuilder;
+import com.starmicronics.starioextension.ICommandBuilder.*;
 
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
@@ -22,6 +26,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.Typeface;
+import android.text.Layout;
+import android.text.StaticLayout;
+import android.text.TextPaint;
 import android.util.Log;
 
 
@@ -43,21 +56,31 @@ public class StarPRNT extends CordovaPlugin {
 
         if (action.equals("checkStatus")) {
             String portName = args.getString(0);
-            String portSettings = getPortSettingsOption(portName);
+            String portSettings = getPortSettingsOption(portName, args.getString(1));
             this.checkStatus(portName, portSettings, callbackContext);
             return true;
         }else if (action.equals("portDiscovery")) {
             String port = args.getString(0);
             this.portDiscovery(port, callbackContext);
             return true;
-        }else {
+        }else if (action.equals("printRasterReceipt")) {
             String portName = args.getString(0);
-            String portSettings = getPortSettingsOption(portName);
-            String receipt = args.getString(1);
+            String portSettings = getPortSettingsOption(portName, args.getString(1));
+            Emulation emulation = getEmulation(args.getString(1));
+            String printObj = args.getString(2);
+            this.printRasterReceipt(portName, portSettings, emulation, printObj, callbackContext);
+            return true;
 
-            this.printReceipt(portName, portSettings, receipt, callbackContext);
+        }else if (action.equals("printRawText")){
+            String portName = args.getString(0);
+            String portSettings = getPortSettingsOption(portName, args.getString(1));
+            Emulation emulation = getEmulation(args.getString(1));
+            String printObj = args.getString(2);
+
+            this.printRawText(portName, portSettings, emulation, printObj, callbackContext);
             return true;
         }
+        return false;
     }
 
 
@@ -87,7 +110,7 @@ public class StarPRNT extends CordovaPlugin {
                             StarPrinterStatus status;
                             Map<String, String> firmwareInformationMap = port.getFirmwareInformation();
                             status = port.retreiveStatus();
-                          
+
 
                             JSONObject json = new JSONObject();
                             try {
@@ -128,34 +151,34 @@ public class StarPRNT extends CordovaPlugin {
         final CallbackContext _callbackContext = callbackContext;
         final String _strInterface = strInterface;
 
-          cordova.getThreadPool()
+        cordova.getThreadPool()
                 .execute(new Runnable() {
                     public void run() {
-                          JSONArray result = new JSONArray();
-                    try {
+                        JSONArray result = new JSONArray();
+                        try {
 
-                        if (_strInterface.equals("LAN")) {
-                            result = getPortDiscovery("LAN");
-                        } else if (_strInterface.equals("Bluetooth")) {
-                            result = getPortDiscovery("Bluetooth");
-                        } else if (_strInterface.equals("USB")) {
-                            result = getPortDiscovery("USB");
-                        } else {
-                            result = getPortDiscovery("All");
+                            if (_strInterface.equals("LAN")) {
+                                result = getPortDiscovery("LAN");
+                            } else if (_strInterface.equals("Bluetooth")) {
+                                result = getPortDiscovery("Bluetooth");
+                            } else if (_strInterface.equals("USB")) {
+                                result = getPortDiscovery("USB");
+                            } else {
+                                result = getPortDiscovery("All");
+                            }
+
+                        } catch (StarIOPortException exception) {
+                            _callbackContext.error(exception.getMessage());
+
+                        } catch (JSONException e) {
+
+                        } finally {
+
+                            Log.d("Discovered ports", result.toString());
+                            _callbackContext.success(result);
                         }
-
-                    } catch (StarIOPortException exception) {
-                        _callbackContext.error(exception.getMessage());
-
-                    } catch (JSONException e) {
-
-                    } finally {
-
-                        Log.d("Discovered ports", result.toString());
-                        _callbackContext.success(result);
                     }
-                }
-            });
+                });
     }
 
 
@@ -185,7 +208,7 @@ public class StarPRNT extends CordovaPlugin {
             }
         }
         if (interfaceName.equals("USB") || interfaceName.equals("All")) {
-             try {
+            try {
                 USBPortList = StarIOPort.searchPrinter("USB:", context);
             }catch (StarIOPortException e) {
                 USBPortList = new ArrayList<PortInfo>();
@@ -194,7 +217,7 @@ public class StarPRNT extends CordovaPlugin {
                 arrayDiscovery.add(portInfo);
             }
         }
-        
+
         for (PortInfo discovery : arrayDiscovery) {
             String portName;
 
@@ -223,39 +246,115 @@ public class StarPRNT extends CordovaPlugin {
         return arrayPorts;
     }
 
+    private Emulation getEmulation(String emulation){
+
+        if(emulation.equals("StarPRNT")) return Emulation.StarPRNT;
+        else if (emulation.equals("StarPRNTL")) return Emulation.StarPRNTL;
+        else if (emulation.equals("StarLine")) return Emulation.StarLine;
+        else if (emulation.equals("StarGraphic")) return Emulation.StarGraphic;
+        else if (emulation.equals("EscPos")) return Emulation.EscPos;
+        else if (emulation.equals("EscPosMobile")) return Emulation.EscPosMobile;
+        else if (emulation.equals("StarDotImpact")) return Emulation.StarDotImpact;
+        else return Emulation.None;
+    };
 
 
 
-    private String getPortSettingsOption(String portName) {
+
+    private String getPortSettingsOption(String portName, String emulation) { // generate the portsettings depending on the emulation type
+
         String portSettings = "";
 
-        if (portName.toUpperCase(Locale.US).startsWith("TCP:")) {
-            portSettings += ""; // retry to yes
-        } else if (portName.toUpperCase(Locale.US).startsWith("BT:")) {
-            portSettings += "mini"; // mini
-            portSettings += ";p"; // or ";p"
-            portSettings += ";l"; // standard
-        }
-
+     if (emulation.equals("EscPosMobile")) portSettings += "mini";
+     else if (emulation.equals("EscPos")) portSettings += "escpos";
+     else //StarLine, StarGraphic, StarDotImpact
+         if (emulation.equals("StarPRNT") || emulation.equals("StarPRNTL")) {
+        portSettings += "Portable";
+        portSettings += ";l"; //retry on
+     }else portSettings += "";
         return portSettings;
     }
 
 
-    private boolean printReceipt(String portName, String portSettings, String receipt, CallbackContext callbackContext) throws JSONException {
+    private void printRawText(String portName, String portSettings, Emulation emulation, String printObj, CallbackContext callbackContext) throws JSONException {
 
-        Context context = this.cordova.getActivity();
+        final Context context = this.cordova.getActivity();
+        final String _portName = portName;
+        final String _portSettings = portSettings;
+        final Emulation _emulation = emulation;
+        final JSONObject print = new JSONObject(printObj);
+        final String text = print.optString("text");
+        final Boolean cutReceipt = (print.has("cutReceipt") ? print.getBoolean("cutReceipt"): true);
+        final Boolean openCashDrawer = (print.has("openCashDrawer")) ? print.getBoolean("openCashDrawer") : true;
+        final CallbackContext _callbackContext = callbackContext;
+
+        cordova.getThreadPool()
+                .execute(new Runnable() {
+                    public void run() {
+
+                        ICommandBuilder builder = StarIoExt.createCommandBuilder(_emulation);
+
+                        builder.beginDocument();
+
+                        builder.append(createCpUTF8(text));
+
+                        if(cutReceipt){
+                            builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);
+                        }
+
+                        if(openCashDrawer){
+                            builder.append(new byte[]{0x07}); // Kick cash drawer
+                        }
+
+                        builder.endDocument();
+
+                        byte[] commands = builder.getCommands();
 
 
-        ArrayList<byte[]> list = new ArrayList<byte[]>();
-        //list.add(new byte[] { 0x1b, 0x1d, 0x74, (byte)0x80 });
-        list.add(createCpUTF8(receipt));
-        list.add(new byte[] { 0x1b, 0x64, 0x02 }); // Cut
-        list.add(new byte[]{0x07}); // Kick cash drawer
+                        sendCommand(context, _portName, _portSettings, commands, _callbackContext);
+                    }
+                });
+    }
+    private void printRasterReceipt(String portName, String portSettings, Emulation emulation, String printObj, CallbackContext callbackContext) throws JSONException {
 
-        return sendCommand(context, portName, portSettings, list, callbackContext);
+        final Context context = this.cordova.getActivity();
+        final String _portName = portName;
+        final String _portSettings = portSettings;
+        final Emulation _emulation = emulation;
+        final JSONObject print = new JSONObject(printObj);
+        final String text = print.getString("text");
+        final int fontSize = (print.has("fontSize")) ? print.getInt("fontSize") : 25;
+        final int paperWidth = (print.has("paperWidth")) ? print.getInt("paperWidth"): 576;
+        final CallbackContext _callbackContext = callbackContext;
+
+        cordova.getThreadPool()
+                .execute(new Runnable() {
+                    public void run() {
+
+                        Typeface typeface = Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL);
+
+                        ICommandBuilder builder = StarIoExt.createCommandBuilder(_emulation);
+
+                        builder.beginDocument();
+
+                        Bitmap image = createBitmapFromText(text, fontSize, paperWidth, typeface);
+
+                        builder.appendBitmap(image, false);
+
+                        builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);
+
+                        builder.endDocument();
+
+                        byte[] commands = builder.getCommands();
+
+
+                        sendCommand(context, _portName, _portSettings, commands, _callbackContext);
+                    }
+                });
     }
 
-    private boolean sendCommand(Context context, String portName, String portSettings, ArrayList<byte[]> byteList, CallbackContext callbackContext) {
+    private boolean sendCommand(Context context, String portName, String portSettings, byte[] commands, CallbackContext callbackContext) {
+
         StarIOPort port = null;
         try {
 			/*
@@ -279,32 +378,32 @@ public class StarPRNT extends CordovaPlugin {
 			 */
             StarPrinterStatus status = port.beginCheckedBlock();
 
-            if (true == status.offline) {
+            if (status.offline) {
                 //throw new StarIOPortException("A printer is offline");
                 sendEvent("printerOffline", null);
                 return false;
             }
 
-            byte[] commandToSendToPrinter = convertFromListByteArrayTobyteArray(byteList);
-            port.writePort(commandToSendToPrinter, 0, commandToSendToPrinter.length);
+            port.writePort(commands, 0, commands.length);
+
 
             port.setEndCheckedBlockTimeoutMillis(30000);// Change the timeout time of endCheckedBlock method.
             status = port.endCheckedBlock();
 
-            if (status.coverOpen == true) {
+            if (status.coverOpen) {
                 callbackContext.error("Cover open");
                 sendEvent("printerCoverOpen", null);
                 return false;
-            } else if (status.receiptPaperEmpty == true) {
+            } else if (status.receiptPaperEmpty) {
                 callbackContext.error("Empty paper");
                 sendEvent("printerPaperEmpty", null);
                 return false;
-            } else if (status.offline == true) {
+            } else if (status.offline) {
                 callbackContext.error("Printer offline");
                 sendEvent("printerOffline", null);
                 return false;
             }
-            callbackContext.success("Printed");
+            callbackContext.success("Success!");
 
         } catch (StarIOPortException e) {
             sendEvent("printerImpossible", e.getMessage());
@@ -361,6 +460,31 @@ public class StarPRNT extends CordovaPlugin {
             result.setKeepCallback(true);
             this._callbackContext.sendPluginResult(result);
         }
+    }
+
+    private Bitmap createBitmapFromText(String printText, int textSize, int printWidth, Typeface typeface) {
+        Paint paint = new Paint();
+        Bitmap bitmap;
+        Canvas canvas;
+
+        paint.setTextSize(textSize);
+        paint.setTypeface(typeface);
+
+        paint.getTextBounds(printText, 0, printText.length(), new Rect());
+
+        TextPaint textPaint = new TextPaint(paint);
+        android.text.StaticLayout staticLayout = new StaticLayout(printText, textPaint, printWidth, Layout.Alignment.ALIGN_NORMAL, 1, 0, false);
+
+        // Create bitmap
+        bitmap = Bitmap.createBitmap(staticLayout.getWidth(), staticLayout.getHeight(), Bitmap.Config.ARGB_8888);
+
+        // Create canvas
+        canvas = new Canvas(bitmap);
+        canvas.drawColor(Color.WHITE);
+        canvas.translate(0, 0);
+        staticLayout.draw(canvas);
+
+        return bitmap;
     }
 
 
