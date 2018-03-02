@@ -7,7 +7,7 @@ module.exports = {
     portDiscovery: function(type, success, error) {
         exec(success, error, "StarPRNT", "portDiscovery", [type]);
     },
-    checkStatus: function (port, success, error) {
+    checkStatus: function (port, emulation, success, error) {
         exec(success, error, 'StarPRNT', 'checkStatus', [port, emulation]);
     },
     printRawText: function (port, emulation, printObj, success, error) {  //connects to printer and disconnects when done
@@ -15,6 +15,11 @@ module.exports = {
     },
     printRasterReceipt: function (port, emulation, printObj, success, error) {  //connects to printer and disconnects when done
         exec(success, error, "StarPRNT", "printRasterReceipt", [port, emulation, printObj]);
+    },
+    //Android functions
+
+    printImage: function (port, emulation, printObj, success, error) {  //connects to printer and disconnects when done
+        exec(success, error, "StarPRNT", "printRasterData", [port, emulation, printObj]);
     },
 
 // iOS only functions

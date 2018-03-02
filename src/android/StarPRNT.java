@@ -1,9 +1,10 @@
-package starprn.cordova;
+package starprnt.cordova;
 
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
 
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Locale;
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ import com.starmicronics.stario.StarPrinterStatus;
 import com.starmicronics.starioextension.StarIoExt;
 import com.starmicronics.starioextension.StarIoExt.Emulation;
 import com.starmicronics.starioextension.ICommandBuilder;
-import com.starmicronics.starioextension.ICommandBuilder.*;
+import com.starmicronics.starioextension.ICommandBuilder.CutPaperAction;
 
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
@@ -26,16 +27,21 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.content.ContentResolver;
+import android.net.Uri;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.provider.MediaStore;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.Log;
+
+
 
 
 /**
@@ -79,7 +85,19 @@ public class StarPRNT extends CordovaPlugin {
 
             this.printRawText(portName, portSettings, emulation, printObj, callbackContext);
             return true;
-        }
+        }else if (action.equals("printRasterData")){
+        String portName = args.getString(0);
+        String portSettings = getPortSettingsOption(portName, args.getString(1));
+        Emulation emulation = getEmulation(args.getString(1));
+        String printObj = args.getString(2);
+
+            try {
+                this.printRasterData(portName, portSettings, emulation, printObj, callbackContext);
+            } catch (IOException e) {
+               // e.printStackTrace();
+            }
+            return true;
+    }
         return false;
     }
 
@@ -340,6 +358,53 @@ public class StarPRNT extends CordovaPlugin {
                         Bitmap image = createBitmapFromText(text, fontSize, paperWidth, typeface);
 
                         builder.appendBitmap(image, false);
+
+                        builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);
+
+                        builder.endDocument();
+
+                        byte[] commands = builder.getCommands();
+
+
+                        sendCommand(context, _portName, _portSettings, commands, _callbackContext);
+                    }
+                });
+    }
+
+    private void printRasterData(String portName, String portSettings, Emulation emulation, String printObj, CallbackContext callbackContext) throws IOException, JSONException {
+
+        final Context context = this.cordova.getActivity();
+        final ContentResolver contentResolver = context.getContentResolver();
+        final String _portName = portName;
+        final String _portSettings = portSettings;
+        final Emulation _emulation = emulation;
+        final JSONObject print = new JSONObject(printObj);
+        final String uriString = print.optString("uri");
+
+
+        final int width = (print.has("width")) ? print.getInt("width") : 576;
+        final CallbackContext _callbackContext = callbackContext;
+
+        cordova.getThreadPool()
+                .execute(new Runnable() {
+                    public void run() {
+
+                        Uri imageUri = null;
+                        Bitmap bitmap = null;
+                        try {
+                            imageUri =  Uri.parse(uriString);
+                            bitmap = MediaStore.Images.Media.getBitmap(contentResolver, imageUri);
+                        } catch (IOException e) {
+                            _callbackContext.error(e.getMessage());
+                        }
+
+                        ICommandBuilder builder = StarIoExt.createCommandBuilder(_emulation);
+
+                        builder.beginDocument();
+
+                        //Bitmap image = createBitmapFromText(text, fontSize, paperWidth, typeface);
+
+                        builder.appendBitmap(bitmap, true, width, true);
 
                         builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);
 

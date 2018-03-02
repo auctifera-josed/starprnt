@@ -17,7 +17,7 @@
 		<source-file src="src/android/lib/starioextension.jar" target-dir="libs" />
 		<config-file target="res/xml/config.xml" parent="/*">
 		<feature name="StarPRNT">
-			<param name="android-package" value="starprn.cordova.StarPRNT" />
+			<param name="android-package" value="starprnt.cordova.StarPRNT" />
 		</feature>
 		</config-file>
 		<config-file target="AndroidManifest.xml" parent="/*" />
