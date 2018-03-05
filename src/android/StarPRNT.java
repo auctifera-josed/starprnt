@@ -402,8 +402,6 @@ public class StarPRNT extends CordovaPlugin {
 
                         builder.beginDocument();
 
-                        //Bitmap image = createBitmapFromText(text, fontSize, paperWidth, typeface);
-
                         builder.appendBitmap(bitmap, true, width, true);
 
                         builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);

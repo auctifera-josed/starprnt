@@ -52,6 +52,70 @@ static NSString *dataCallbackId = nil;
         [self.commandDelegate sendPluginResult:result callbackId:dataCallbackId];
     }];
 }
+- (void)checkStatus:(CDVInvokedUrlCommand *)command {
+    NSLog(@"Checking status");
+    [self.commandDelegate runInBackground:^{
+        NSString *portName = nil;
+        NSString *emulation = nil;
+        CDVPluginResult    *result = nil;
+        StarPrinterStatus_2 status;
+        SMPort *port = nil;
+        if (command.arguments.count > 0) {
+            portName = [command.arguments objectAtIndex:0];
+            emulation = [command.arguments objectAtIndex:1];
+        }
+        NSString *portSettings = [self getPortSettingsOption:emulation];
+        @try {
+            
+            port = [SMPort getPort:portName :portSettings :10000];     // 10000mS!!!
+            
+            // Sleep to avoid a problem which sometimes cannot communicate with Bluetooth.
+     
+            NSOperatingSystemVersion version = {11, 0, 0};
+            BOOL isOSVer11OrLater = [[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:version];
+            if ((isOSVer11OrLater) && ([portName.uppercaseString hasPrefix:@"BT:"])) {
+                [NSThread sleepForTimeInterval:0.2];
+            }
+            
+            [port getParsedStatus:&status :2];
+            NSDictionary *firmwareInformation = [[NSMutableDictionary alloc] init];
+            @try {
+                firmwareInformation = [port getFirmwareInformation];
+            }
+            @catch (PortException *exception) {
+                //unable to get Firmware
+            }
+          
+            NSDictionary *statusDictionary = [self portStatusToDictionary:status :firmwareInformation];
+            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:statusDictionary];
+        }
+        @catch (PortException *exception) {
+            NSLog(@"Port exception");
+            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[exception reason]];
+        }
+        @finally {
+            if (port != nil) {
+                [SMPort releasePort:port];
+            }
+        }
+        
+        NSLog(@"Sending status result");
+        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+    }];
+}
+-(NSString *)getPortSettingsOption:(NSString *)emulation {
+    NSString *portSettings = [NSString string];
+    
+    if([emulation isEqualToString:@"EscPosMobile"]){
+        portSettings = [@"mini" stringByAppendingString:portSettings];
+    }else if([emulation isEqualToString:@"EscPos"]){
+        portSettings = [@"escpos" stringByAppendingString:portSettings];
+    }else if([emulation isEqualToString:@"StarPRNT"] || [emulation isEqualToString:@"StarPRNTL"]){
+        portSettings = [@"Portable;l" stringByAppendingString:portSettings];
+    }
+    return portSettings;
+}
+
 
 - (void)portDiscovery:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
@@ -669,6 +733,17 @@ static NSString *dataCallbackId = nil;
     [dict setObject:[portInfo portName] forKey:@"portName"];
     [dict setObject:[portInfo macAddress] forKey:@"macAddress"];
     [dict setObject:[portInfo modelName] forKey:@"modelName"];
+    return dict;
+}
+- (NSMutableDictionary*)portStatusToDictionary:(StarPrinterStatus_2)status :(NSDictionary*)firmwareInformation {
+    NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    [dict setObject:[NSNumber numberWithBool:status.coverOpen == SM_TRUE] forKey:@"coverOpen"];
+    [dict setObject:[NSNumber numberWithBool:status.offline == SM_TRUE] forKey:@"offline"];
+    [dict setObject:[NSNumber numberWithBool:status.overTemp == SM_TRUE] forKey:@"overTemp"];
+    [dict setObject:[NSNumber numberWithBool:status.cutterError == SM_TRUE] forKey:@"cutterError"];
+    [dict setObject:[NSNumber numberWithBool:status.receiptPaperEmpty == SM_TRUE] forKey:@"receiptPaperEmpty"];
+    [dict addEntriesFromDictionary:firmwareInformation];
+    
     return dict;
 }
 
