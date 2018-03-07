@@ -6,20 +6,31 @@
 	<keywords>print,starmicronics,star printer</keywords>
 	<license>MIT</license>
 	<engines>
-    <engine name="cordova" version=">=3.4.0"/>
-  </engines>
-
+    	<engine name="cordova" version=">=3.4.0"/>
+  	</engines>
 	<js-module name="StarPRNT" src="www/StarPRNT.js">
 		<clobbers target="starprnt" />
 	</js-module>
-
+	<platform name="android">
+		<source-file src="src/android/StarPRNT.java" target-dir="src/starprnt/cordova" />
+		<source-file src="src/android/lib/StarIOPort3.1.jar" target-dir="libs" />
+		<source-file src="src/android/lib/starioextension.jar" target-dir="libs" />
+		<config-file target="res/xml/config.xml" parent="/*">
+		<feature name="StarPRNT">
+			<param name="android-package" value="starprnt.cordova.StarPRNT" />
+		</feature>
+		</config-file>
+		<config-file target="AndroidManifest.xml" parent="/*" />
+		<config-file target="AndroidManifest.xml" parent="/manifest">
+		<uses-permission android:name="android.permission.BLUETOOTH" />
+		</config-file>
+  	</platform>
 	<platform name="ios">
 		<config-file target="config.xml" parent="/*">
 			<feature name="StarPRNT">
 				<param name="ios-package" value="StarPRNT" />
 			</feature>
-		</config-file>
-		
+		</config-file>		
 		<config-file target="*-Info.plist" parent="UISupportedExternalAccessoryProtocols">
 	    <array>
         <string>jp.star-m.starpro</string>
@@ -32,10 +43,10 @@
 		<source-file src="src/ios/Communication.m" />
 		<header-file src="src/ios/StarPRNT.h" />
 		<source-file src="src/ios/StarPRNT.m" />
+		<!-- Using StarPRNT_iOS_SDK_V5_4_1  -->
+		<framework src="./frameworks/StarIO.framework" custom="true"/>
+		<framework src="./frameworks/StarIO_Extension.framework" custom="true"/>
+		<framework src="CoreBluetooth.framework"/>
+		<framework src="ExternalAccessory.framework"/>
 	</platform>
-	<!-- Using StarPRNT_iOS_SDK_V5_4_1  -->
-	<framework src="./frameworks/StarIO.framework" custom="true"/>
-	<framework src="./frameworks/StarIO_Extension.framework" custom="true"/>
-	<framework src="CoreBluetooth.framework"/>
-	<framework src="ExternalAccessory.framework"/>
 </plugin>
