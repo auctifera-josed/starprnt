@@ -273,7 +273,7 @@ public class StarPRNT extends CordovaPlugin {
         else if (emulation.equals("EscPos")) return Emulation.EscPos;
         else if (emulation.equals("EscPosMobile")) return Emulation.EscPosMobile;
         else if (emulation.equals("StarDotImpact")) return Emulation.StarDotImpact;
-        else return Emulation.None;
+        else return Emulation.StarLine;
     };
 
 
@@ -343,6 +343,8 @@ public class StarPRNT extends CordovaPlugin {
         final String text = print.getString("text");
         final int fontSize = (print.has("fontSize")) ? print.getInt("fontSize") : 25;
         final int paperWidth = (print.has("paperWidth")) ? print.getInt("paperWidth"): 576;
+        final Boolean cutReceipt = (print.has("cutReceipt") ? print.getBoolean("cutReceipt"): true);
+        final Boolean openCashDrawer = (print.has("openCashDrawer")) ? print.getBoolean("openCashDrawer") : true;
         final CallbackContext _callbackContext = callbackContext;
 
         cordova.getThreadPool()
@@ -358,8 +360,14 @@ public class StarPRNT extends CordovaPlugin {
                         Bitmap image = createBitmapFromText(text, fontSize, paperWidth, typeface);
 
                         builder.appendBitmap(image, false);
+                       
+                        if(cutReceipt){
+                            builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);
+                        }
 
-                        builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);
+                        if(openCashDrawer){
+                            builder.append(new byte[]{0x07}); // Kick cash drawer
+                        }
 
                         builder.endDocument();
 
@@ -380,9 +388,9 @@ public class StarPRNT extends CordovaPlugin {
         final Emulation _emulation = emulation;
         final JSONObject print = new JSONObject(printObj);
         final String uriString = print.optString("uri");
-
-
         final int width = (print.has("width")) ? print.getInt("width") : 576;
+        final Boolean cutReceipt = (print.has("cutReceipt") ? print.getBoolean("cutReceipt"): true);
+        final Boolean openCashDrawer = (print.has("openCashDrawer")) ? print.getBoolean("openCashDrawer") : true;
         final CallbackContext _callbackContext = callbackContext;
 
         cordova.getThreadPool()
@@ -404,7 +412,14 @@ public class StarPRNT extends CordovaPlugin {
 
                         builder.appendBitmap(bitmap, true, width, true);
 
-                        builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);
+                        if(cutReceipt){
+                            builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);
+                        }
+
+                        if(openCashDrawer){
+                            builder.append(new byte[]{0x07}); // Kick cash drawer
+                        }
+
 
                         builder.endDocument();
 

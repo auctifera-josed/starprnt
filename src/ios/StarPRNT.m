@@ -53,7 +53,7 @@ static NSString *dataCallbackId = nil;
     }];
 }
 - (void)checkStatus:(CDVInvokedUrlCommand *)command {
-    NSLog(@"Checking status");
+    //NSLog(@"Checking status");
     [self.commandDelegate runInBackground:^{
         NSString *portName = nil;
         NSString *emulation = nil;
@@ -99,21 +99,155 @@ static NSString *dataCallbackId = nil;
             }
         }
         
-        NSLog(@"Sending status result");
+        //NSLog(@"Sending status result");
         [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
     }];
 }
--(NSString *)getPortSettingsOption:(NSString *)emulation {
-    NSString *portSettings = [NSString string];
-    
-    if([emulation isEqualToString:@"EscPosMobile"]){
-        portSettings = [@"mini" stringByAppendingString:portSettings];
-    }else if([emulation isEqualToString:@"EscPos"]){
-        portSettings = [@"escpos" stringByAppendingString:portSettings];
-    }else if([emulation isEqualToString:@"StarPRNT"] || [emulation isEqualToString:@"StarPRNTL"]){
-        portSettings = [@"Portable;l" stringByAppendingString:portSettings];
-    }
-    return portSettings;
+
+-(void)printRawText:(CDVInvokedUrlCommand *)command {
+    [self.commandDelegate runInBackground:^{
+
+        NSStringEncoding encoding = NSWindowsCP1252StringEncoding;
+        NSString *portName = nil;
+        NSString *emulation = nil;
+        NSDictionary *printObj = nil;
+        
+  
+        if (command.arguments.count > 0) {
+            portName = [command.arguments objectAtIndex:0];
+            emulation = [command.arguments objectAtIndex:1];
+            printObj = [command.arguments objectAtIndex:2];
+        };
+        
+        NSString *portSettings = [self getPortSettingsOption:emulation];
+        NSString *text = [printObj valueForKey:@"text"];
+        BOOL cutReceipt = ([[printObj valueForKey:@"cutReceipt"] caseInsensitiveCompare:@"true"]  == NSOrderedSame) ? YES : NO;
+        BOOL openCashDrawer = ([[printObj valueForKey:@"openCashDrawer"] caseInsensitiveCompare:@"true"]  == NSOrderedSame) ? YES : NO;
+        StarIoExtEmulation Emulation = [self getEmulation:emulation];
+        
+        
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:Emulation];
+        
+        [builder beginDocument];
+        
+        [builder appendData:[text dataUsingEncoding:encoding]];
+        
+        if(cutReceipt == YES){
+            [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
+        }
+        
+        if(openCashDrawer == YES){
+            [builder appendPeripheral:SCBPeripheralChannelNo1];
+            [builder appendPeripheral:SCBPeripheralChannelNo2];
+        }
+        
+        [builder endDocument];
+        
+          [self sendCommand:[builder.commands copy]
+                   portName:portName
+               portSettings:portSettings
+                    timeout:10000
+                 callbackId:command.callbackId];
+    }];
+}
+-(void)printRasterReceipt:(CDVInvokedUrlCommand *)command {
+    [self.commandDelegate runInBackground:^{
+        
+        NSString *portName = nil;
+        NSString *emulation = nil;
+        NSDictionary *printObj = nil;
+        
+        
+        if (command.arguments.count > 0) {
+            portName = [command.arguments objectAtIndex:0];
+            emulation = [command.arguments objectAtIndex:1];
+            printObj = [command.arguments objectAtIndex:2];
+        };
+        
+        NSString *portSettings = [self getPortSettingsOption:emulation];
+        NSString *text = [printObj valueForKey:@"text"];
+        NSInteger fontSize = ([printObj valueForKey:@"fontSize"]) ? [[printObj valueForKey:@"fontSize"] intValue] : 25;
+        CGFloat paperWidth = ([printObj valueForKey:@"paperWidth"]) ? [[printObj valueForKey:@"paperWidth"] floatValue] : 576;
+        BOOL cutReceipt = ([[printObj valueForKey:@"cutReceipt"] caseInsensitiveCompare:@"true"]  == NSOrderedSame) ? YES : NO;
+        BOOL openCashDrawer = ([[printObj valueForKey:@"openCashDrawer"] caseInsensitiveCompare:@"true"]  == NSOrderedSame) ? YES : NO;
+        StarIoExtEmulation Emulation = [self getEmulation:emulation];
+        
+        UIFont *font = [UIFont fontWithName:@"Menlo" size:fontSize];
+        
+        UIImage *image = [self imageWithString:text font:font width:paperWidth];
+        
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:Emulation];
+        
+        [builder beginDocument];
+        
+         [builder appendBitmap:image diffusion:NO];
+        
+        if(cutReceipt == YES){
+            [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
+        }
+        
+        if(openCashDrawer == YES){
+            [builder appendPeripheral:SCBPeripheralChannelNo1];
+            [builder appendPeripheral:SCBPeripheralChannelNo2];
+        }
+        
+        [builder endDocument];
+        
+        [self sendCommand:[builder.commands copy]
+                 portName:portName
+             portSettings:portSettings
+                  timeout:10000
+               callbackId:command.callbackId];
+    }];
+}
+
+-(void)printRasterData:(CDVInvokedUrlCommand *)command { //print image
+    [self.commandDelegate runInBackground:^{
+        
+        NSString *portName = nil;
+        NSString *emulation = nil;
+        NSDictionary *printObj = nil;
+        
+        if (command.arguments.count > 0) {
+            portName = [command.arguments objectAtIndex:0];
+            emulation = [command.arguments objectAtIndex:1];
+            printObj = [command.arguments objectAtIndex:2];
+        };
+        
+        NSString *portSettings = [self getPortSettingsOption:emulation];
+        NSString *uri = [printObj valueForKey:@"uri"];
+        CGFloat paperWidth = ([printObj valueForKey:@"paperWidth"]) ? [[printObj valueForKey:@"paperWidth"] floatValue] : 576;
+        BOOL cutReceipt = ([[printObj valueForKey:@"cutReceipt"] caseInsensitiveCompare:@"true"]  == NSOrderedSame) ? YES : NO;
+        BOOL openCashDrawer = ([[printObj valueForKey:@"openCashDrawer"] caseInsensitiveCompare:@"true"]  == NSOrderedSame) ? YES : NO;
+        StarIoExtEmulation Emulation = [self getEmulation:emulation];
+        
+        NSURL *imageURL = [NSURL URLWithString:uri];
+        NSData *imageData = [NSData dataWithContentsOfURL:imageURL];
+        UIImage *image = [UIImage imageWithData:imageData];
+
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:Emulation];
+        
+        [builder beginDocument];
+        
+        [builder appendBitmap:image diffusion:YES width:paperWidth bothScale:YES];
+        
+        if(cutReceipt == YES){
+            [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
+        }
+        
+        if(openCashDrawer == YES){
+            [builder appendPeripheral:SCBPeripheralChannelNo1];
+            [builder appendPeripheral:SCBPeripheralChannelNo2];
+        }
+        
+        [builder endDocument];
+        
+        [self sendCommand:[builder.commands copy]
+                 portName:portName
+             portSettings:portSettings
+                  timeout:10000
+               callbackId:command.callbackId];
+    }];
 }
 
 
@@ -137,6 +271,13 @@ static NSString *dataCallbackId = nil;
         if ([portType isEqualToString:@"All"] || [portType isEqualToString:@"LAN"]) {
             NSArray *lanPortInfoArray = [SMPort searchPrinter:@"TCP:"];
             for (PortInfo *p in lanPortInfoArray) {
+                [info addObject:[self portInfoToDictionary:p]];
+            }
+        }
+        
+        if ([portType isEqualToString:@"All"] || [portType isEqualToString:@"BluetoothLE"]) {
+            NSArray *btPortInfoArray = [SMPort searchPrinter:@"BLE:"];
+            for (PortInfo *p in btPortInfoArray) {
                 [info addObject:[self portInfoToDictionary:p]];
             }
         }
@@ -685,6 +826,166 @@ static NSString *dataCallbackId = nil;
         CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:printResult];
         [self.commandDelegate sendPluginResult:result callbackId:callbackId];
     }];
+}
+- (void)sendCommand:(NSMutableData *)commands
+           portName:(NSString *)portName
+       portSettings:(NSString *)portSettings
+            timeout:(NSInteger)timeout
+         callbackId:(NSString *)callbackId{
+    [self.commandDelegate runInBackground:^{
+        CDVPluginResult *pluginResult = nil;
+        BOOL result = NO;
+        NSString *title   = @"";
+        NSString *message = @"";
+        
+        SMPort *port = nil;
+        @try{
+            while(YES){
+            port = [SMPort getPort:portName :portSettings :(uint32_t) timeout];
+               
+                if (port == nil) {
+                    title = @"Fail to Open Port";
+                    break;
+                }
+                
+            // Sleep to avoid a problem which sometimes cannot communicate with Bluetooth.
+            // (Refer Readme for details)
+            NSOperatingSystemVersion version = {11, 0, 0};
+            BOOL isOSVer11OrLater = [[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:version];
+                if ((isOSVer11OrLater) && ([portName.uppercaseString hasPrefix:@"BT:"])) {
+                    [NSThread sleepForTimeInterval:0.2];
+                }
+                StarPrinterStatus_2 printerStatus;
+                
+                [port beginCheckedBlock:&printerStatus :2];
+                
+                if (printerStatus.offline == SM_TRUE) {
+                    title   = @"Printer Error";
+                    message = @"Printer is offline (BeginCheckedBlock)";
+                    break;
+                }
+                
+                NSDate *startDate = [NSDate date];
+                
+                uint32_t total = 0;
+                
+                while (total < (uint32_t) commands.length) {
+                    uint32_t written = [port writePort:(unsigned char *) commands.bytes :total :(uint32_t) commands.length - total];
+                    
+                    total += written;
+                    
+                    if ([[NSDate date] timeIntervalSinceDate:startDate] >= 30.0) {     // 30000mS!!!
+                        title   = @"Printer Error";
+                        message = @"Write port timed out";
+                        break;
+                    }
+                }
+                
+                if (total < (uint32_t) commands.length) {
+                    break;
+                }
+                
+                port.endCheckedBlockTimeoutMillis = 30000;     // 30000mS!!!
+                
+                [port endCheckedBlock:&printerStatus :2];
+                
+                if (printerStatus.offline == SM_TRUE) {
+                    title   = @"Printer Error";
+                    message = @"Printer is offline (EndCheckedBlock)";
+                    break;
+                }
+                
+                title   = @"Send Commands";
+                message = @"Success";
+                
+                result = YES;
+                break;
+            }
+        }
+        @catch(PortException *exception){
+            title   = @"Printer Error";
+            message = @"Write port timed out (PortException)";
+        }
+        @finally{
+            if (port != nil) {
+                [SMPort releasePort:port];
+                
+                port = nil;
+            }
+        }
+        if(result == YES){
+           pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Success!"];
+        }else{
+            NSString *messageResult = [title stringByAppendingString: @": "];
+            messageResult = [messageResult stringByAppendingString: message];
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:messageResult];
+        }
+       
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:callbackId];
+        
+    }];
+}
+-(NSString *)getPortSettingsOption:(NSString *)emulation {
+    NSString *portSettings = [NSString string];
+    
+    if([emulation isEqualToString:@"EscPosMobile"]){
+        portSettings = [@"mini" stringByAppendingString:portSettings];
+    }else if([emulation isEqualToString:@"EscPos"]){
+        portSettings = [@"escpos" stringByAppendingString:portSettings];
+    }else if([emulation isEqualToString:@"StarPRNT"] || [emulation isEqualToString:@"StarPRNTL"]){
+        portSettings = [@"Portable;l" stringByAppendingString:portSettings];
+    }
+    return portSettings;
+}
+-(StarIoExtEmulation)getEmulation:(NSString *)emulation{
+    
+    if([emulation isEqualToString:@"StarPRNT"]) return StarIoExtEmulationStarPRNT;
+    else if ([emulation isEqualToString:@"StarPRNTL"]) return StarIoExtEmulationStarPRNTL;
+    else if ([emulation isEqualToString:@"StarLine"]) return StarIoExtEmulationStarLine;
+    else if ([emulation isEqualToString:@"StarGraphic"]) return StarIoExtEmulationStarGraphic;
+    else if ([emulation isEqualToString:@"EscPos"]) return StarIoExtEmulationEscPos;
+    else if ([emulation isEqualToString:@"EscPosMobile"]) return StarIoExtEmulationEscPosMobile;
+    else if ([emulation isEqualToString:@"StarDotImpact"]) return StarIoExtEmulationStarDotImpact;
+    else return StarIoExtEmulationStarLine;
+}
+- (UIImage *)imageWithString:(NSString *)string font:(UIFont *)font width:(CGFloat)width {
+    NSDictionary *attributeDic = @{NSFontAttributeName:font};
+    
+    CGSize size = [string boundingRectWithSize:CGSizeMake(width, 10000)
+                                       options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingTruncatesLastVisibleLine
+                                    attributes:attributeDic
+                                       context:nil].size;
+    
+    if ([UIScreen.mainScreen respondsToSelector:@selector(scale)]) {
+        if (UIScreen.mainScreen.scale == 2.0) {
+            UIGraphicsBeginImageContextWithOptions(size, NO, 1.0);
+        } else {
+            UIGraphicsBeginImageContext(size);
+        }
+    } else {
+        UIGraphicsBeginImageContext(size);
+    }
+    
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    [[UIColor whiteColor] set];
+    
+    CGRect rect = CGRectMake(0, 0, size.width + 1, size.height + 1);
+    
+    CGContextFillRect(context, rect);
+    
+    NSDictionary *attributes = @ {
+    NSForegroundColorAttributeName:[UIColor blackColor],
+    NSFontAttributeName:font
+    };
+    
+    [string drawInRect:rect withAttributes:attributes];
+    
+    UIImage *imageToPrint = UIGraphicsGetImageFromCurrentImageContext();
+    
+    UIGraphicsEndImageContext();
+    
+    return imageToPrint;
 }
 
 - (SCBAlignmentPosition)getAlignment:(NSString *)alignment {
