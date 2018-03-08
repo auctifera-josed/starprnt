@@ -13,6 +13,7 @@
 	</js-module>
 	<platform name="android">
 		<source-file src="src/android/StarPRNT.java" target-dir="src/starprnt/cordova" />
+		<!-- Using StarPRNT_Android_SDK_V5_5_0  -->
 		<source-file src="src/android/lib/StarIOPort3.1.jar" target-dir="libs" />
 		<source-file src="src/android/lib/starioextension.jar" target-dir="libs" />
 		<config-file target="res/xml/config.xml" parent="/*">
@@ -43,7 +44,7 @@
 		<source-file src="src/ios/Communication.m" />
 		<header-file src="src/ios/StarPRNT.h" />
 		<source-file src="src/ios/StarPRNT.m" />
-		<!-- Using StarPRNT_iOS_SDK_V5_4_1  -->
+		<!-- Using StarPRNT_iOS_SDK_V5_5_0  -->
 		<framework src="./frameworks/StarIO.framework" custom="true"/>
 		<framework src="./frameworks/StarIO_Extension.framework" custom="true"/>
 		<framework src="CoreBluetooth.framework"/>

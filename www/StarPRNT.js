@@ -24,8 +24,8 @@ module.exports = {
 
 // iOS only functions
 
-    openCashDrawer: function (success, error) {
-        exec(success, error, "StarPRNT", "openCashDrawer", []);
+    openCashDrawer: function (port, emulation, success, error) {
+        exec(success, error, "StarPRNT", "openCashDrawer", [port, emulation]);
     },
     printReceipt: function (receipt, success, error, receiptId, alignment, international, font) {
         exec(success, error, "StarPRNT", "printData", [receipt, receiptId, alignment, international, font]);
