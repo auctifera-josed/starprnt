@@ -97,6 +97,12 @@ public class StarPRNT extends CordovaPlugin {
                // e.printStackTrace();
             }
             return true;
+    }else if (action.equals("openCashDrawer")){
+        String portName = args.getString(0);
+        String portSettings = getPortSettingsOption(portName, args.getString(1));
+        Emulation emulation = getEmulation(args.getString(1));
+        this.openCashDrawer(portName, portSettings, emulation, callbackContext);
+        return true;
     }
         return false;
     }
@@ -429,6 +435,34 @@ public class StarPRNT extends CordovaPlugin {
                         sendCommand(context, _portName, _portSettings, commands, _callbackContext);
                     }
                 });
+    }
+    private void openCashDrawer(String portName, String portSettings, Emulation emulation, CallbackContext callbackContext) throws JSONException {
+        final Context context = this.cordova.getActivity();
+        final String _portName = portName;
+        final String _portSettings = portSettings;
+        final Emulation _emulation = emulation;
+        final CallbackContext _callbackContext = callbackContext;
+
+        cordova.getThreadPool()
+                .execute(new Runnable() {
+                    public void run() {
+
+                        ICommandBuilder builder = StarIoExt.createCommandBuilder(_emulation);
+
+                        builder.beginDocument();
+
+                        builder.append(new byte[]{0x07}); // Kick cash drawer
+                    
+
+                        builder.endDocument();
+
+                        byte[] commands = builder.getCommands();
+
+                        sendCommand(context, _portName, _portSettings, commands, _callbackContext);
+                    }
+                });
+
+
     }
 
     private boolean sendCommand(Context context, String portName, String portSettings, byte[] commands, CallbackContext callbackContext) {

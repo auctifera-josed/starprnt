@@ -297,7 +297,19 @@ static NSString *dataCallbackId = nil;
 
 - (void)openCashDrawer:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
-        ISCBBuilder *builder = [StarIoExt createCommandBuilder:StarIoExtEmulationStarLine];
+
+        NSString *portName = nil;
+        NSString *emulation = nil;
+        
+        if (command.arguments.count > 0) {
+            portName = [command.arguments objectAtIndex:0];
+            emulation = [command.arguments objectAtIndex:1];
+        };
+        
+        NSString *portSettings = [self getPortSettingsOption:emulation];
+        StarIoExtEmulation Emulation = [self getEmulation:emulation];
+        
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:Emulation];
         
         [builder beginDocument];
         
@@ -305,7 +317,15 @@ static NSString *dataCallbackId = nil;
         [builder appendPeripheral:SCBPeripheralChannelNo2];
         
         [builder endDocument];
-        [self sendCommand:[builder.commands copy] callbackId:command.callbackId];
+        if(portName != nil){
+            [self sendCommand:[builder.commands copy]  //SMPort
+                     portName:portName
+                 portSettings:portSettings
+                      timeout:10000
+                   callbackId:command.callbackId];
+        }else{
+            [self sendCommand:[builder.commands copy] callbackId:command.callbackId]; //StarIoExtManager
+        }
     }];
 }
 

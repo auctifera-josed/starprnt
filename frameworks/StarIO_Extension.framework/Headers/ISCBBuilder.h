@@ -375,6 +375,10 @@ typedef NS_ENUM(NSInteger, SCBBlackMarkType) {
                           length:(NSUInteger)length
                         position:(SCBAlignmentPosition)position;
 
+#pragma mark - HorizontalTabPosition
+
+- (void)appendHorizontalTabPosition:(NSArray<NSNumber *> *)positions;
+
 #pragma mark - CutPaper
 
 - (void)appendCutPaper:(SCBCutPaperAction)action;
