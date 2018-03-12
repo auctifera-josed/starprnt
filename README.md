@@ -1,6 +1,6 @@
 # StarPRNT Plugin
 
-Cordova plugin for using [Star micronics printers](http://www.starmicronics.com/printer/home.aspx) from a cordova, phonegap or Ionic application.
+Cordova plugin for using [Star micronics printers](http://www.starmicronics.com/pages/All-Products) from a cordova, phonegap or Ionic application.
 
 **Note:** This is based on the work from the guys at [InteractiveObject](https://github.com/InteractiveObject/StarIOPlugin)
 
@@ -14,6 +14,10 @@ function onDeviceReady() {
 }
 ```
 
+# Example
+**Ionic 1 example app:** [https://github.com/infoxicator/StarprntDemo-Ionic1](https://github.com/infoxicator/StarprntDemo-Ionic1)
+
+
 # Install
 
 Cordova: `cordova plugin add https://github.com/auctifera-josed/starprnt`
@@ -24,17 +28,42 @@ Ionic 2+: `ionic cordova plugin add https://github.com/auctifera-josed/starprnt`
 # Example
 
 ```javascript
-var q = function(res){console.log(res)};
-starprnt.portDiscovery('All',q,q);
+starprnt.portDiscovery('All', 
+function(result){ console.log(result)}, function(error){ console.log(error) });
 ```
-Success Log Example: [{modelName: "Star Micronics", macAddress: "", portName: "BT:9100"}]
+Success Log Example: ```console[{modelName: "TSP700II", macAddress: "00:00:00:00", portName: "TCP:192.168.1.1"}]```
+
+# SMPort Example
+SMPort opens the connection to the printer and closes it after the commands are successfully sent.
+```javascript
+
+printObj = {
+text:"Star Clothing Boutique\n123 Star Road\nCity, State 12345\n\n",
+cutReceipt:"true",
+openCashDrawer: "true"
+}
+starprnt.printRawText("TCP:192.168.1.1","StarLine", printObj, 
+function(result){console.log(result)}, function(error){ console.log(error) }); 
+```
+
+# StarIOExtManager Example
+StarIOExtManager Allows you to connect to the printer and listen for hardware events, you will need to manually open and close the connection.
 
 ```javascript
 starprnt.connect("BT:9100",function(err,res){});
-starprnt.printData("Star Clothing Boutique\n123 Star Road\nCity, State 12345\n\n",q,q); 
+starprnt.printData("Star Clothing Boutique\n123 Star Road\nCity, State 12345\n\n"function(result){
+console.log(result)}, function(error){console.log(error)}); 
 ```
+# API Reference: SMPort Android and iOS
 
-# API Reference
+- [portDiscovery(type, success, error)](#port-discovery)
+- [checkStatus(portName, emulation, success, error)](#check-status)
+- [printRawText(portName, emulation, printObj, success, error)](#print-raw-text)
+- [printRasterReceipt(portName, emulation, printObj, success, error)](#print-raster-receipt)
+- [printImage(portName, emulation, printObj, success, error)](#print-image)
+
+
+# API Reference: StarIOExtManager iOS only (Android coming soon)
 - [activateBlackMarkSensor(success, error)](#activate-black-mark-sensor)
 - [cancelBlackMarkSensor(success, error)](#cancel-black-mark-sensor)
 - [connect(printerPort, drawerPort, callback)](#connect)
@@ -48,7 +77,103 @@ starprnt.printData("Star Clothing Boutique\n123 Star Road\nCity, State 12345\n\n
 - [printTicket(ticket, success, error)](#print-ticket)
 - [setDefaultSettings(success, error)](#set-default-settings)
 
-# Functions
+# SMPort Functions
+SMPort opens the connection to the printer and closes it after the commands are successfully sent.
+Almost all the methods take success an error functions as parameters, these are callback functions to execute in either case. They are not listed in the parameters for simplicity.
+
+Note: asterisk (*) indicates a required parameter
+
+## Check Status
+The `checkStatus(portName, emulation, success, error)` returns the current status of the printer, as well as model number and firmware information.
+
+| Paremeter | Description | Type/Example |
+| ----------- | -------- | ---------- |
+| portName* | Port name returned by portDiscovery | String: "TCP:192.168.1.1" |
+| emulation* | Emulation type depending on the printer model | String: [Emulation](#emulation) |
+
+## Print Raw Text
+The `printRawText(portName, emulation, printObj, success, error)` prints text without formatting
+
+| Paremeter | Description | Type/Example |
+| ----------- | -------- | ---------- |
+| portName* | Port name returned by portDiscovery | String: "TCP:192.168.1.1" |
+| emulation* | Emulation type depending on the printer model | String: [Emulation](#emulation) |
+| printObj* | Object containing the text and printer options | Object: Example Below |
+
+```javascript
+var printObj = {
+text:"Star Clothing Boutique\n123 Star Road\nCity, State 12345\n\n",
+cutReceipt:"true", // optional - Defaults to true
+openCashDrawer: "true" // optional -Defaults to true
+}
+```
+
+## Print Raster Receipt
+
+The `printRasterReceipt(portName, emulation, printObj, success, error)`  converts the text into an bitmap image and prints on the desired paper width and font size
+
+| Paremeter | Description | Type/Example |
+| ----------- | -------- | ---------- |
+| portName* | Port name returned by portDiscovery | String: "TCP:192.168.1.1" |
+| emulation* | Emulation type depending on the printer model | String: [Emulation](#emulation) |
+| printObj* | Object containing the text and printer options | Object: Example Below |
+
+```javascript
+var printObj = {
+        text : "        Star Clothing Boutique\n" +
+        "             123 Star Road\n" +
+        "           City, State 12345\n" +
+        "\n" +
+        "Date:MM/DD/YYYY          Time:HH:MM PM\n" +
+        "--------------------------------------\n" +
+        "SALE\n" +
+        "SKU            Description       Total\n" +
+        "300678566      PLAIN T-SHIRT     10.99\n" +
+        "300692003      BLACK DENIM       29.99\n" +
+        "300651148      BLUE DENIM        29.99\n" +
+        "300642980      STRIPED DRESS     49.99\n" +
+        "30063847       BLACK BOOTS       35.99\n" +
+        "\n" +
+        "Subtotal                        156.95\n" +
+        "Tax                               0.00\n" +
+        "--------------------------------------\n" +
+        "Total                          $156.95\n" +
+        "--------------------------------------\n" +
+        "\n" +
+        "Charge\n" +
+        "156.95\n" +
+        "Visa XXXX-XXXX-XXXX-0123\n" +
+        "Refunds and Exchanges\n" +
+        "Within 30 days with receipt\n" +
+        "And tags attached\n",
+        fontSize: 25,       //Defaults to 25
+        paperWidth: 576,    // options: 384 = 2", 576 = 3", 832 = 4"
+        cutReceipt:"true", // Defaults to true
+        openCashDrawer:"true" // Defaults to true
+        };
+```
+
+## Print Image
+
+The `printImage(portName, emulation, printObj, success, error)` prints a picture from the photo library or camera
+
+| Paremeter | Description | Type/Example |
+| ----------- | -------- | ---------- |
+| portName* | Port name returned by portDiscovery | String: "TCP:192.168.1.1" |
+| emulation* | Emulation type depending on the printer model | String: [Emulation](#emulation) |
+| printObj* | Object containing the URI and printer options | Object: Example Below |
+
+```javascript
+ var printObj = {
+    uri: 'file:///var/mobile/Containers/Data/Application/1B4B8C4C-6487-45AB-B950-0AC3633542F5/tmp/cdv_photo_002.jpg',
+    width: 576 // options: 384 = 2", 576 = 3", 832 = 4"
+    cutReceipt:"true", // Defaults to true
+    openCashDrawer:"true" // Defaults to true
+};
+```
+
+
+# StarIOExtManager Functions
 Almost all the methods take success an error functions as parameters, this are callback functions to execute in either case. They are not listed in the parameters for simplicity.
 
 Note: asterisk (*) indicates a required parameter
@@ -305,3 +430,31 @@ window.addEventListener('starPrntData', function (e) {
   }
 });
 ```
+
+## Emulation
+
+Source: Star SDK Documentation
+| Printer Models | Emulation | 
+| ----------- | -------- |
+| mPOP  | StarPRNT |
+| FVP10  | StarLine |
+| TSP100  | StarGraphic |
+| TSP650II  | StarLine |
+| TSP700II  | StarLine |
+| TSP800II  | StarLine |
+| SP700  | StarDotImpact |
+| SM-S210i  | EscPosMobile |
+| SM-S220i  | EscPosMobile |
+| SM-S230i  | EscPosMobile |
+| SM-T300i/T300  | EscPosMobile |
+| SM-T400i  | EscPosMobile |
+| SM-L200  | StarPRNT |
+| SM-L300  | StarPRNT |
+| BSC10  | EscPos |
+| SM-S210i StarPRNT  | StarPRNT |
+| SM-S220i StarPRNT | StarPRNT |
+| SM-S230i StarPRNT | StarPRNT |
+| SM-T300i/T300 StarPRNT  | StarPRNT |
+| SM-T400i StarPRNT  | StarPRNT |
+
+
