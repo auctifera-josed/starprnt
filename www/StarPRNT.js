@@ -16,22 +16,26 @@ module.exports = {
     printRasterReceipt: function (port, emulation, printObj, success, error) {  //connects to printer and disconnects when done
         exec(success, error, "StarPRNT", "printRasterReceipt", [port, emulation, printObj]);
     },
-    //Android functions
 
     printImage: function (port, emulation, printObj, success, error) {  //connects to printer and disconnects when done
         exec(success, error, "StarPRNT", "printRasterData", [port, emulation, printObj]);
     },
 
-// iOS only functions
-
     openCashDrawer: function (port, emulation, success, error) {
         exec(success, error, "StarPRNT", "openCashDrawer", [port, emulation]);
     },
+
+    print: function(port, emulation, printCommands, success, error){ //exposes methods for the ISCBBuilder interface
+        exec(success, error, "StarPRNT", "print", [port, emulation, printCommands]);
+    },
+
+// iOS only functions
+
     printReceipt: function (receipt, success, error, receiptId, alignment, international, font) {
         exec(success, error, "StarPRNT", "printData", [receipt, receiptId, alignment, international, font]);
     },
-    printData: function (text, success, error) {
-        exec(success, error, "StarPRNT", "printRawData", [text]);
+    printData: function (text, emulation, success, error) {
+        exec(success, error, "StarPRNT", "printRawData", [text, emulation]);
     },
     printFormattedReceipt: function(receipt, success, error) {
         exec(success, error, "StarPRNT", "printReceipt", [receipt]);
@@ -57,7 +61,7 @@ module.exports = {
     disconnect: function (success, error) {
         exec(success, error, "StarPRNT", "disconnect", []);
     },
-    connect: function (printerPort, callback) {
+    connect: function (printerPort, emulation, callback) {
         var connected = false;
         exec(function (result) {
             if (!connected) {
@@ -69,7 +73,7 @@ module.exports = {
         },
         function (error) {
             callback(error)
-        }, 'StarPRNT', 'connect', [printerPort]);
+        }, 'StarPRNT', 'connect', [printerPort, emulation]);
     }
 };
 

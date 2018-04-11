@@ -17,21 +17,26 @@ static NSString *dataCallbackId = nil;
         if (_printerManager != nil && _printerManager.port != nil) {
             [_printerManager disconnect];
         }
+        CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Success!"];
+        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
     }];
 }
 
 - (void)connect:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
             NSString *printerPort = nil;
+            NSString *emulation = @"StarLine";
         
         if (command.arguments.count > 0) {
             printerPort = [command.arguments objectAtIndex:0];
+            emulation = [command.arguments objectAtIndex:1];
         }
+        NSString *portSettings = [self getPortSettingsOption:emulation];
 
         if (printerPort != nil && printerPort != (id)[NSNull null]){
             _printerManager = [[StarIoExtManager alloc] initWithType:StarIoExtManagerTypeStandard
                                                               portName:printerPort
-                                                          portSettings:@""
+                                                          portSettings:portSettings
                                                        ioTimeoutMillis:10000];
             
             _printerManager.delegate = self;
@@ -331,12 +336,18 @@ static NSString *dataCallbackId = nil;
 
 - (void)printRawData:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
-        ISCBBuilder *builder = [StarIoExt createCommandBuilder:StarIoExtEmulationStarLine];
+        
         NSString *content = nil;
+        NSString *emulation = @"StarLine";
         
         if (command.arguments.count > 0) {
             content = [command.arguments objectAtIndex:0];
-        }        
+            emulation = [command.arguments objectAtIndex:1];
+        }
+        StarIoExtEmulation Emulation = [self getEmulation:emulation];
+        
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:Emulation];
+        
         
         [builder appendData:[content dataUsingEncoding:NSWindowsCP1252StringEncoding]];
         
