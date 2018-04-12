@@ -494,7 +494,13 @@ public class StarPRNT extends CordovaPlugin {
                         byte[] commands = builder.getCommands();
 
 
-                        sendCommand(context, _portName, _portSettings, commands, _callbackContext);
+                        if(_portName == "null"){ // use StarIOExtManager
+                            sendCommand(commands, starIoExtManager.getPort(), _callbackContext);
+
+                        }else{//use StarIOPort
+                            sendCommand(context, _portName, _portSettings, commands, _callbackContext);
+                        }
+
                     }
                 });
     }
@@ -522,8 +528,12 @@ public class StarPRNT extends CordovaPlugin {
 
                         byte[] commands = builder.getCommands();
 
+                        if(_portName == "null"){ // use StarIOExtManager
+                            sendCommand(commands, starIoExtManager.getPort(), _callbackContext);
 
-                        sendCommand(context, _portName, _portSettings, commands, _callbackContext);
+                        }else{//use StarIOPort
+                            sendCommand(context, _portName, _portSettings, commands, _callbackContext);
+                        }
                     }
                 });
     }
@@ -575,8 +585,13 @@ public class StarPRNT extends CordovaPlugin {
 
                         byte[] commands = builder.getCommands();
 
+                        if(_portName == "null"){ // use StarIOExtManager
+                            sendCommand(commands, starIoExtManager.getPort(), _callbackContext);
 
-                        sendCommand(context, _portName, _portSettings, commands, _callbackContext);
+                        }else{//use StarIOPort
+                            sendCommand(context, _portName, _portSettings, commands, _callbackContext);
+                        }
+
                     }
                 });
     }
@@ -602,7 +617,13 @@ public class StarPRNT extends CordovaPlugin {
 
                         byte[] commands = builder.getCommands();
 
-                        sendCommand(context, _portName, _portSettings, commands, _callbackContext);
+                        if(_portName == "null"){ // use StarIOExtManager
+                            sendCommand(commands, starIoExtManager.getPort(), _callbackContext);
+
+                        }else{//use StarIOPort
+                            sendCommand(context, _portName, _portSettings, commands, _callbackContext);
+                        }
+
                     }
                 });
 
@@ -616,7 +637,7 @@ public class StarPRNT extends CordovaPlugin {
 			 * using StarIOPort3.1.jar (support USB Port) Android OS Version: upper 2.2
 			 */
             try {
-                Thread.sleep(100);
+                Thread.sleep(200);
             } catch (InterruptedException e) {
             }
             if(port == null){ //Not connected or port closed
@@ -639,7 +660,7 @@ public class StarPRNT extends CordovaPlugin {
             status = port.beginCheckedBlock();
 
             if (status.offline) {
-                sendEvent("printerOffline", null);
+                //sendEvent("printerOffline", null);
                 throw new StarIOPortException("A printer is offline");
                 //callbackContext.error("The printer is offline");
             }
@@ -652,15 +673,15 @@ public class StarPRNT extends CordovaPlugin {
 
             if (status.coverOpen) {
                 callbackContext.error("Cover open");
-                sendEvent("printerCoverOpen", null);
+                //sendEvent("printerCoverOpen", null);
                 return false;
             } else if (status.receiptPaperEmpty) {
                 callbackContext.error("Empty paper");
-                sendEvent("printerPaperEmpty", null);
+                //sendEvent("printerPaperEmpty", null);
                 return false;
             } else if (status.offline) {
                 callbackContext.error("Printer offline");
-                sendEvent("printerOffline", null);
+                //sendEvent("printerOffline", null);
                 return false;
             }
             callbackContext.success("Success!");
@@ -701,7 +722,6 @@ public class StarPRNT extends CordovaPlugin {
             if (status.offline) {
                 //throw new StarIOPortException("A printer is offline");
                 callbackContext.error("The printer is offline");
-                sendEvent("printerOffline", null);
                 return false;
             }
 
@@ -713,21 +733,17 @@ public class StarPRNT extends CordovaPlugin {
 
             if (status.coverOpen) {
                 callbackContext.error("Cover open");
-                sendEvent("printerCoverOpen", null);
                 return false;
             } else if (status.receiptPaperEmpty) {
                 callbackContext.error("Empty paper");
-                sendEvent("printerPaperEmpty", null);
                 return false;
             } else if (status.offline) {
                 callbackContext.error("Printer offline");
-                sendEvent("printerOffline", null);
                 return false;
             }
             callbackContext.success("Success!");
 
         } catch (StarIOPortException e) {
-            sendEvent("printerImpossible", e.getMessage());
             callbackContext.error(e.getMessage());
         } finally {
             if (port != null) {
@@ -1024,6 +1040,18 @@ public class StarPRNT extends CordovaPlugin {
         public void onPrinterCoverClose() {
             sendEvent("printerCoverClose", null);
         }
+
+        //Cash Drawer events
+        @Override
+        public void onCashDrawerOpen() {
+            sendEvent("cashDrawerOpen", null);
+        }
+
+        @Override
+        public void onCashDrawerClose() {
+            sendEvent("cashDrawerClose", null);
+        }
+
     };
 
     private Bitmap createBitmapFromText(String printText, int textSize, int printWidth, Typeface typeface) {
