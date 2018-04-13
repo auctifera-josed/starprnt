@@ -766,7 +766,7 @@ public class StarPRNT extends CordovaPlugin {
                 else if (command.has("appendEmphasis")) builder.appendEmphasis(createCpUTF8(command.getString("appendEmphasis")));
                 else if (command.has("appendInvert")) builder.appendInvert(createCpUTF8(command.getString("appendInvert")));
                 else if (command.has("appendUnderline")) builder.appendUnderLine(createCpUTF8(command.getString("appendUnderline")));
-                else if (command.has("international")) builder.appendInternational(getInternational(command.getString("international")));
+                else if (command.has("appendInternational")) builder.appendInternational(getInternational(command.getString("appendInternational")));
                 else if (command.has("appendLineFeed")) builder.appendLineFeed(command.getInt("appendLineFeed"));
                 else if (command.has("appendUnitFeed")) builder.appendUnitFeed(command.getInt("appendUnitFeed"));
                 else if (command.has("appendLineSpace")) builder.appendLineSpace(command.getInt("appendLineSpace"));
@@ -790,7 +790,7 @@ public class StarPRNT extends CordovaPlugin {
                     builder.appendHorizontalTabPosition(tabPositions);
                 } else if (command.has("appendLogo")){
                     ICommandBuilder.LogoSize logoSize = (command.has("logoSize") ? getLogoSize(command.getString("logoSize")): getLogoSize("Normal"));
-                    builder.appendLogo(logoSize ,command.getInt("appendLogo"));
+                    builder.appendLogo(logoSize, command.getInt("appendLogo"));
                 } else if (command.has("appendBarcode")){
                     ICommandBuilder.BarcodeSymbology barcodeSymbology =  (command.has("BarcodeSymbology") ? getBarcodeSymbology(command.getString("BarcodeSymbology")): getBarcodeSymbology("Code128"));
                     ICommandBuilder.BarcodeWidth barcodeWidth = (command.has("BarcodeWidth") ? getBarcodeWidth(command.getString("BarcodeWidth")): getBarcodeWidth("Mode2"));

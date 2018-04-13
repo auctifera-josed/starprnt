@@ -17,7 +17,7 @@ static NSString *dataCallbackId = nil;
         if (_printerManager != nil && _printerManager.port != nil) {
             [_printerManager disconnect];
         }
-        CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Success!"];
+        CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Printer Disconnected!"];
         [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
     }];
 }
@@ -32,7 +32,7 @@ static NSString *dataCallbackId = nil;
             emulation = [command.arguments objectAtIndex:1];
         }
         NSString *portSettings = [self getPortSettingsOption:emulation];
-
+        
         if (printerPort != nil && printerPort != (id)[NSNull null]){
             _printerManager = [[StarIoExtManager alloc] initWithType:StarIoExtManagerTypeStandard
                                                               portName:printerPort
@@ -51,7 +51,7 @@ static NSString *dataCallbackId = nil;
         }
 
         dataCallbackId = command.callbackId;
-        CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Printer Connected"];
         // CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:[_printerManager connect]];
         [result setKeepCallbackAsBool:YES];
         [self.commandDelegate sendPluginResult:result callbackId:dataCallbackId];
@@ -126,8 +126,8 @@ static NSString *dataCallbackId = nil;
         
         NSString *portSettings = [self getPortSettingsOption:emulation];
         NSString *text = [printObj valueForKey:@"text"];
-        BOOL cutReceipt = ([[printObj valueForKey:@"cutReceipt"] caseInsensitiveCompare:@"true"]  == NSOrderedSame) ? YES : NO;
-        BOOL openCashDrawer = ([[printObj valueForKey:@"openCashDrawer"] caseInsensitiveCompare:@"true"]  == NSOrderedSame) ? YES : NO;
+        BOOL cutReceipt = ([printObj valueForKey:@"cutReceipt"]) ? YES : NO;
+        BOOL openCashDrawer = ([printObj valueForKey:@"openCashDrawer"]) ? YES : NO;
         StarIoExtEmulation Emulation = [self getEmulation:emulation];
         
         
@@ -147,12 +147,21 @@ static NSString *dataCallbackId = nil;
         }
         
         [builder endDocument];
-        
-          [self sendCommand:[builder.commands copy]
-                   portName:portName
-               portSettings:portSettings
-                    timeout:10000
-                 callbackId:command.callbackId];
+
+        if(portName != nil && portName != (id)[NSNull null]){
+            
+                [self sendCommand:[builder.commands copy]
+                         portName:portName
+                     portSettings:portSettings
+                          timeout:10000
+                       callbackId:command.callbackId];
+            
+            }else{ //Use StarIOExtManager and send command to connected printer
+                
+            [self sendCommand:[builder.commands copy]
+                   callbackId:command.callbackId];
+                
+        }
     }];
 }
 -(void)printRasterReceipt:(CDVInvokedUrlCommand *)command {
@@ -173,8 +182,8 @@ static NSString *dataCallbackId = nil;
         NSString *text = [printObj valueForKey:@"text"];
         NSInteger fontSize = ([printObj valueForKey:@"fontSize"]) ? [[printObj valueForKey:@"fontSize"] intValue] : 25;
         CGFloat paperWidth = ([printObj valueForKey:@"paperWidth"]) ? [[printObj valueForKey:@"paperWidth"] floatValue] : 576;
-        BOOL cutReceipt = ([[printObj valueForKey:@"cutReceipt"] caseInsensitiveCompare:@"true"]  == NSOrderedSame) ? YES : NO;
-        BOOL openCashDrawer = ([[printObj valueForKey:@"openCashDrawer"] caseInsensitiveCompare:@"true"]  == NSOrderedSame) ? YES : NO;
+        BOOL cutReceipt = ([printObj valueForKey:@"cutReceipt"]) ? YES : NO;
+        BOOL openCashDrawer = ([printObj valueForKey:@"openCashDrawer"]) ? YES : NO;
         StarIoExtEmulation Emulation = [self getEmulation:emulation];
         
         UIFont *font = [UIFont fontWithName:@"Menlo" size:fontSize];
@@ -197,12 +206,21 @@ static NSString *dataCallbackId = nil;
         }
         
         [builder endDocument];
-        
-        [self sendCommand:[builder.commands copy]
-                 portName:portName
-             portSettings:portSettings
-                  timeout:10000
-               callbackId:command.callbackId];
+        if(portName != nil && portName != (id)[NSNull null]){
+            
+            [self sendCommand:[builder.commands copy]
+                     portName:portName
+                 portSettings:portSettings
+                      timeout:10000
+                   callbackId:command.callbackId];
+            
+        }else{ //Use StarIOExtManager and send command to connected printer
+            
+            [self sendCommand:[builder.commands copy]
+                   callbackId:command.callbackId];
+            
+        }
+
     }];
 }
 
@@ -222,8 +240,8 @@ static NSString *dataCallbackId = nil;
         NSString *portSettings = [self getPortSettingsOption:emulation];
         NSString *uri = [printObj valueForKey:@"uri"];
         CGFloat paperWidth = ([printObj valueForKey:@"paperWidth"]) ? [[printObj valueForKey:@"paperWidth"] floatValue] : 576;
-        BOOL cutReceipt = ([[printObj valueForKey:@"cutReceipt"] caseInsensitiveCompare:@"true"]  == NSOrderedSame) ? YES : NO;
-        BOOL openCashDrawer = ([[printObj valueForKey:@"openCashDrawer"] caseInsensitiveCompare:@"true"]  == NSOrderedSame) ? YES : NO;
+        BOOL cutReceipt = ([printObj valueForKey:@"cutReceipt"]) ? YES : NO;
+        BOOL openCashDrawer = ([printObj valueForKey:@"openCashDrawer"]) ? YES : NO;
         StarIoExtEmulation Emulation = [self getEmulation:emulation];
         
         NSURL *imageURL = [NSURL URLWithString:uri];
@@ -247,11 +265,62 @@ static NSString *dataCallbackId = nil;
         
         [builder endDocument];
         
-        [self sendCommand:[builder.commands copy]
-                 portName:portName
-             portSettings:portSettings
-                  timeout:10000
-               callbackId:command.callbackId];
+        if(portName != nil && portName != (id)[NSNull null]){
+            
+            [self sendCommand:[builder.commands copy]
+                     portName:portName
+                 portSettings:portSettings
+                      timeout:10000
+                   callbackId:command.callbackId];
+            
+        }else{ //Use StarIOExtManager and send command to connected printer
+            
+            [self sendCommand:[builder.commands copy]
+                   callbackId:command.callbackId];
+            
+        }
+    }];
+}
+-(void)print:(CDVInvokedUrlCommand *)command { //print ISCCommandBuilder methods 
+    [self.commandDelegate runInBackground:^{
+        
+        NSString *portName = nil;
+        NSString *emulation = nil;
+        NSArray *printCommands = nil;
+        
+        if (command.arguments.count > 0) {
+            portName = [command.arguments objectAtIndex:0];
+            emulation = [command.arguments objectAtIndex:1];
+            printCommands = [command.arguments objectAtIndex:2];
+        };
+        
+        NSString *portSettings = [self getPortSettingsOption:emulation];
+
+        StarIoExtEmulation Emulation = [self getEmulation:emulation];
+        
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:Emulation];
+        
+        [builder beginDocument];
+        
+        [self appendCommands:builder
+               printCommands:printCommands];
+
+        [builder endDocument];
+        
+        if(portName != nil && portName != (id)[NSNull null]){
+            
+            [self sendCommand:[builder.commands copy]
+                     portName:portName
+                 portSettings:portSettings
+                      timeout:10000
+                   callbackId:command.callbackId];
+            
+        }else{ //Use StarIOExtManager and send command to connected printer
+            
+            [self sendCommand:[builder.commands copy]
+                   callbackId:command.callbackId];
+            
+        }
     }];
 }
 
@@ -322,14 +391,19 @@ static NSString *dataCallbackId = nil;
         [builder appendPeripheral:SCBPeripheralChannelNo2];
         
         [builder endDocument];
-        if(portName != nil){
-            [self sendCommand:[builder.commands copy]  //SMPort
+        if(portName != nil && portName != (id)[NSNull null]){
+            
+            [self sendCommand:[builder.commands copy]
                      portName:portName
                  portSettings:portSettings
                       timeout:10000
                    callbackId:command.callbackId];
-        }else{
-            [self sendCommand:[builder.commands copy] callbackId:command.callbackId]; //StarIoExtManager
+            
+        }else{ //Use StarIOExtManager and send command to connected printer
+            
+            [self sendCommand:[builder.commands copy]
+                   callbackId:command.callbackId];
+            
         }
     }];
 }
@@ -342,7 +416,6 @@ static NSString *dataCallbackId = nil;
         
         if (command.arguments.count > 0) {
             content = [command.arguments objectAtIndex:0];
-            emulation = [command.arguments objectAtIndex:1];
         }
         StarIoExtEmulation Emulation = [self getEmulation:emulation];
         
@@ -828,34 +901,98 @@ static NSString *dataCallbackId = nil;
 
 - (void)sendCommand:(NSMutableData *)commands callbackId:(NSString *)callbackId{
     [self.commandDelegate runInBackground:^{
-        BOOL printResult = false;
+        CDVPluginResult *pluginResult = nil;
+        BOOL result = NO;
+        
+        NSString *title   = @"";
+        NSString *message = @"";
         
         SMPort *port = nil;
+        @try{
+            while(YES){
+                
+                if (_printerManager == nil) {
+                    title   = @"Not connected";
+                    message = @"Please connect to the printer before sending commands.";
+                    break;
+                    
+                } else if (_printerManager.port == nil){
+                    title   = @"Fail to Open Port";
+                    message = @"Please re-connect to the printer";
+                    break;
+                } else {
+                    port = [_printerManager port];
+                }
+                
+                // Sleep to avoid a problem which sometimes cannot communicate with Bluetooth.
+                // (Refer Readme for details)
+                NSOperatingSystemVersion version = {11, 0, 0};
+                BOOL isOSVer11OrLater = [[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:version];
+                if ((isOSVer11OrLater) && ([port.portName.uppercaseString hasPrefix:@"BT:"])) {
+                    [NSThread sleepForTimeInterval:0.2];
+                }
+                
+                StarPrinterStatus_2 printerStatus;
+                
+                [port beginCheckedBlock:&printerStatus :2];
+                
+                if (printerStatus.offline == SM_TRUE) {
+                    title   = @"Printer Error";
+                    message = @"Printer is offline (BeginCheckedBlock)";
+                    break;
+                }
+                
+                NSDate *startDate = [NSDate date];
+                
+                uint32_t total = 0;
+                
+                while (total < (uint32_t) commands.length) {
+                    uint32_t written = [port writePort:(unsigned char *) commands.bytes :total :(uint32_t) commands.length - total];
+                    
+                    total += written;
+                    
+                    if ([[NSDate date] timeIntervalSinceDate:startDate] >= 30.0) {     // 30000mS!!!
+                        title   = @"Printer Error";
+                        message = @"Write port timed out";
+                        break;
+                    }
+                }
+                
+                if (total < (uint32_t) commands.length) {
+                    break;
+                }
+                
+                port.endCheckedBlockTimeoutMillis = 30000;     // 30000mS!!!
+                
+                [port endCheckedBlock:&printerStatus :2];
+                
+                if (printerStatus.offline == SM_TRUE) {
+                    title   = @"Printer Error";
+                    message = @"Printer is offline (EndCheckedBlock)";
+                    break;
+                }
+                
+                title   = @"Send Commands";
+                message = @"Success";
+                
+                result = YES;
+                break;
+            }
+        }
+        @catch(PortException *exception){
+            title   = @"Printer Error";
+            message = @"Write port timed out (PortException)";
+        }
+        if(result == YES){
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Success!"];
+        }else{
+            NSString *messageResult = [title stringByAppendingString: @": "];
+            messageResult = [messageResult stringByAppendingString: message];
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:messageResult];
+        }
         
-        if (_printerManager == nil) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Not connected" message:@"Please connect to the printer before sending commands." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-                [alertView show];
-            });
-        } else if (_printerManager.port == nil){
-            dispatch_async(dispatch_get_main_queue(), ^{
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Port not found" message:@"Please re connect to the printer, something is not working as expected." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-                [alertView show];
-            });
-        } else {
-            port = [_printerManager port];
-        }
-
-        if (commands != nil && port != nil) {
-            [_printerManager.lock lock];
-            
-            printResult = [Communication sendCommands:commands port:port];
-            
-            [_printerManager.lock unlock];
-        }
-
-        CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:printResult];
-        [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:callbackId];
+        
     }];
 }
 - (void)sendCommand:(NSMutableData *)commands
@@ -1018,48 +1155,6 @@ static NSString *dataCallbackId = nil;
     
     return imageToPrint;
 }
-
-- (SCBAlignmentPosition)getAlignment:(NSString *)alignment {
-    if (alignment != nil && alignment != (id)[NSNull null]){
-        if ([alignment isEqualToString:@"left"])
-            return SCBAlignmentPositionLeft;
-        else if ([alignment isEqualToString:@"center"])
-            return SCBAlignmentPositionCenter;
-        else if ([alignment isEqualToString:@"right"])
-           return SCBAlignmentPositionRight;
-        else 
-            return SCBAlignmentPositionCenter;
-    } else {
-        return SCBAlignmentPositionCenter;
-    }
-}
-
-- (SCBInternationalType)getInternational:(NSString *)internationl {
-    if (internationl != nil && internationl != (id)[NSNull null]){
-        if ([internationl isEqualToString:@"US"])
-            return SCBInternationalTypeUSA;
-        else if ([internationl isEqualToString:@"FR"])
-            return SCBInternationalTypeFrance;
-        else if ([internationl isEqualToString:@"UK"])
-            return SCBInternationalTypeUK;
-        else
-            return SCBInternationalTypeUSA;
-    } else
-        return SCBInternationalTypeUSA;
-}
-
-- (SCBFontStyleType)getFont:(NSString *)font {
-    if (font != nil && font != (id)[NSNull null]){
-        if ([font isEqualToString:@"A"])
-            return SCBFontStyleTypeA;
-        else if ([font isEqualToString:@"B"])
-            return SCBFontStyleTypeB;
-        else
-            return SCBFontStyleTypeA;
-    } else
-        return SCBFontStyleTypeA;
-}
-
 - (NSMutableDictionary*)portInfoToDictionary:(PortInfo *)portInfo {
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
     [dict setObject:[portInfo portName] forKey:@"portName"];
@@ -1090,6 +1185,257 @@ static NSString *dataCallbackId = nil;
         [result setKeepCallbackAsBool:YES];
         [self.commandDelegate sendPluginResult:result callbackId:dataCallbackId];
     }
+}
+
+-(void)appendCommands:(ISCBBuilder *)builder
+       printCommands:(NSArray *)printCommands {
+    
+    NSStringEncoding encoding = NSWindowsCP1252StringEncoding;
+    
+    for (id command in printCommands){
+        if ([command valueForKey:@"appendInternational"]) [builder appendInternational:[self getInternational:[command valueForKey:@"appendInternational"]]];
+        else if ([command valueForKey:@"appendCharacterSpace"]) [builder appendCharacterSpace:[[command valueForKey:@"appendCharacterSpace"] intValue]];
+        else if ([command valueForKey:@"append"]) [builder appendData:[[command valueForKey:@"append"] dataUsingEncoding:encoding]];
+        else if ([command valueForKey:@"appendRaw"]) [builder appendRawData:[[command valueForKey:@"appendRaw"] dataUsingEncoding:encoding]];
+        else if ([command valueForKey:@"appendEmphasis"]) [builder appendDataWithEmphasis:[[command valueForKey:@"appendEmphasis"] dataUsingEncoding:encoding]];
+        else if ([command valueForKey:@"appendInvert"]) [builder appendDataWithInvert:[[command valueForKey:@"appendInvert"] dataUsingEncoding:encoding]];
+        else if ([command valueForKey:@"appendUnderline"]) [builder appendDataWithUnderLine:[[command valueForKey:@"appendUnderline"] dataUsingEncoding:encoding]];
+        else if ([command valueForKey:@"appendLineFeed"]) [builder appendLineFeed:[[command valueForKey:@"appendLineFeed"] intValue]];
+        else if ([command valueForKey:@"appendUnitFeed"]) [builder appendUnitFeed:[[command valueForKey:@"appendUnitFeed"] intValue]];
+        else if ([command valueForKey:@"appendLineSpace"]) [builder appendLineSpace:[[command valueForKey:@"appendLineSpace"] intValue]];
+        else if ([command valueForKey:@"appendFontStyle"])[builder appendFontStyle:[self getFont:[command valueForKey:@"appendFontStyle"]]];
+        else if ([command valueForKey:@"appendCutPaper"]) [builder appendCutPaper:[self getCutPaperAction:[command valueForKey:@"appendCutPaper"]]];
+        else if ([command valueForKey:@"openCashDrawer"])[builder appendPeripheral:[self getPeripheralChannel:[command valueForKey:@"openCashDrawer"]]];
+        else if ([command valueForKey:@"appendBlackMark"]) [builder appendBlackMark:[self getBlackMarkType:[command valueForKey:@"appendBlackMark"]]];
+        else if ([command valueForKey:@"appendAbsolutePosition"]){
+            if([command valueForKey:@"data"]) [builder appendDataWithAbsolutePosition:[[command valueForKey:@"data"] dataUsingEncoding:encoding]
+                                                                             position:[[command valueForKey:@"appendAbsolutePosition"] intValue]];
+            else [builder appendAbsolutePosition:[[command valueForKey:@"appendAbsolutePosition"] intValue]];
+        }
+        else if ([command valueForKey:@"appendAlignment"]) {
+             if([command valueForKey:@"data"]) [builder appendDataWithAlignment:[[command valueForKey:@"data"] dataUsingEncoding:encoding]
+                                                                       position:[self getAlignment:[command valueForKey:@"appendAlignment"]]];
+             else [builder appendAlignment:[self getAlignment:[command valueForKey:@"appendAlignment"]]];
+        }
+        else if ([command valueForKey:@"appendHorizontalTabPosition"]) {
+            NSArray<NSNumber *> *tabPositionArray = nil;
+            tabPositionArray = [command valueForKey:@"appendHorizontalTabPosition"];
+            if (tabPositionArray != nil && tabPositionArray != (id)[NSNull null])[builder appendHorizontalTabPosition:tabPositionArray];
+        }
+        else if ([command valueForKey:@"appendMultiple"]) {
+            int width = ([[command valueForKey:@"width"] intValue]) ? [[command valueForKey:@"width"] intValue]: 2;
+            int height = ([[command valueForKey:@"height"] intValue]) ? [[command valueForKey:@"height"] intValue]: 2;
+            [builder appendDataWithMultiple:[[command valueForKey:@"appendMultiple"] dataUsingEncoding:encoding] width:width height:height];
+        }
+        else if ([command valueForKey:@"appendLogo"]) {
+            if([command valueForKey:@"logoSize"]) [builder appendLogo:[self getLogoSize:[command valueForKey:@"logoSize"]]
+                                                               number:[[command valueForKey:@"appendLogo"] intValue]];
+            else [builder appendLogo:SCBLogoSizeNormal number:[[command valueForKey:@"appendLogo"] intValue]];
+        }
+        else if ([command valueForKey:@"appendBarcode"]) {
+            SCBBarcodeSymbology barcodeSymbology = [self getBarcodeSymbology:[command valueForKey:@"BarcodeSymbology"]];
+            SCBBarcodeWidth barcodeWidth = [self getBarcodeWidth:[command valueForKey:@"BarcodeWidth"]];
+            int height = ([command valueForKey:@"height"]) ? [[command valueForKey:@"height"] intValue]: 40;
+            BOOL hri = ([[command valueForKey:@"hri"] boolValue]  == NO) ? NO : YES;
+            
+            if([command valueForKey:@"absolutePosition"]){
+                int position = ([[command valueForKey:@"absolutePosition"] intValue]) ? [[command valueForKey:@"absolutePosition"] intValue]: 40;
+                [builder appendBarcodeDataWithAbsolutePosition:[[command valueForKey:@"appendBarcode"] dataUsingEncoding:encoding]
+                                                     symbology:barcodeSymbology width:barcodeWidth height:height hri:hri position:position];
+            }
+            else if ([command valueForKey:@"alignment"]){
+                SCBAlignmentPosition alignment = [self getAlignment:[command valueForKey:@"alignment"]];
+                [builder appendBarcodeDataWithAlignment:[[command valueForKey:@"appendBarcode"] dataUsingEncoding:encoding]
+                                              symbology:barcodeSymbology width:barcodeWidth height:height hri:hri position:alignment];
+            }
+            else [builder appendBarcodeData:[[command valueForKey:@"appendBarcode"] dataUsingEncoding:encoding]
+                                  symbology:barcodeSymbology width:barcodeWidth height:height hri:hri];
+            
+        }
+        else if ([command valueForKey:@"appendQrCode"]) {
+            SCBQrCodeModel qrCodeModel = [self getQrCodeModel:[command valueForKey:@"QrCodeModel"]];
+            SCBQrCodeLevel qrCodeLevel = [self getQrCodeLevel:[command valueForKey:@"QrCodeLevel"]];
+            int cell = ([[command valueForKey:@"cell"] intValue]) ? [[command valueForKey:@"cell"] intValue]: 4;
+            
+            if([command valueForKey:@"absolutePosition"]){
+                int position = ([[command valueForKey:@"absolutePosition"] intValue]) ? [[command valueForKey:@"absolutePosition"] intValue]: 40;
+                [builder appendQrCodeDataWithAbsolutePosition:[[command valueForKey:@"appendQrCode"] dataUsingEncoding:encoding]
+                                                          model:qrCodeModel level:qrCodeLevel cell:cell position:position];
+            }
+            else if ([command valueForKey:@"alignment"]){
+                SCBAlignmentPosition alignment = [self getAlignment:[command valueForKey:@"alignment"]];
+                [builder appendQrCodeDataWithAlignment:[[command valueForKey:@"appendQrCode"] dataUsingEncoding:encoding]
+                                                 model:qrCodeModel level:qrCodeLevel cell:cell position:alignment];
+            }
+            else [builder appendQrCodeData:[[command valueForKey:@"appendQrCode"] dataUsingEncoding:encoding]
+                                     model:qrCodeModel level:qrCodeLevel cell:cell];
+            }
+        else if ([command valueForKey:@"appendBitmap"]) {
+            NSString *urlString = [command valueForKey:@"appendBitmap"];
+            NSInteger width = ([command valueForKey:@"width"]) ? [[command valueForKey:@"width"] intValue] : 576;
+            BOOL diffusion = ([[command valueForKey:@"diffusion"] boolValue] == NO) ? NO : YES;
+            BOOL bothScale = ([[command valueForKey:@"bothScale"] boolValue]  == NO) ? NO : YES;
+            SCBBitmapConverterRotation rotation = [self getBitmapConverterRotation:[command valueForKey:@"rotation"]];
+            NSURL *imageURL = [NSURL URLWithString:urlString];
+            NSData *imageData = [NSData dataWithContentsOfURL:imageURL];
+            UIImage *image = [UIImage imageWithData:imageData];
+            
+            if([command valueForKey:@"absolutePosition"]){
+                int position = ([[command valueForKey:@"absolutePosition"] intValue]) ? [[command valueForKey:@"absolutePosition"] intValue]: 40;
+                [builder appendBitmapWithAbsolutePosition:image diffusion:diffusion width:width bothScale:bothScale rotation:rotation position:position];
+            }
+            else if ([command valueForKey:@"alignment"]){
+                SCBAlignmentPosition alignment = [self getAlignment:[command valueForKey:@"alignment"]];
+                [builder appendBitmapWithAlignment:image diffusion:diffusion width:width bothScale:bothScale rotation:rotation position:alignment];
+            }
+            else [builder appendBitmap:image diffusion:diffusion width:width bothScale:bothScale rotation:rotation];
+        }
+        
+    }
+    
+    
+}
+
+#pragma mark -
+#pragma mark ISCBBuilder Constants
+#pragma mark -
+
+- (SCBAlignmentPosition)getAlignment:(NSString *)alignment {
+    if (alignment != nil && alignment != (id)[NSNull null]){
+        if ([alignment caseInsensitiveCompare:@"left"] == NSOrderedSame) return SCBAlignmentPositionLeft;
+        else if ([alignment caseInsensitiveCompare:@"center"] == NSOrderedSame) return SCBAlignmentPositionCenter;
+        else if ([alignment caseInsensitiveCompare:@"right"] == NSOrderedSame)  return SCBAlignmentPositionRight;
+        else return SCBAlignmentPositionLeft;
+    } else {
+        return SCBAlignmentPositionLeft;
+    }
+}
+
+- (SCBInternationalType)getInternational:(NSString *)internationl {
+    if (internationl != nil && internationl != (id)[NSNull null]){
+        if ([internationl isEqualToString:@"US"] || [internationl isEqualToString:@"USA"]) return SCBInternationalTypeUSA;
+        else if ([internationl isEqualToString:@"FR"] || [internationl isEqualToString:@"France"]) return SCBInternationalTypeFrance;
+        else if ([internationl isEqualToString:@"UK"]) return SCBInternationalTypeUK;
+        else if ([internationl isEqualToString:@"Germany"]) return SCBInternationalTypeGermany;
+        else if ([internationl isEqualToString:@"Denmark"]) return SCBInternationalTypeDenmark;
+        else if ([internationl isEqualToString:@"Sweden"]) return SCBInternationalTypeSweden;
+        else if ([internationl isEqualToString:@"Italy"]) return SCBInternationalTypeItaly;
+        else if ([internationl isEqualToString:@"Spain"]) return SCBInternationalTypeSpain;
+        else if ([internationl isEqualToString:@"Japan"]) return SCBInternationalTypeJapan;
+        else if ([internationl isEqualToString:@"Norway"]) return SCBInternationalTypeNorway;
+        else if ([internationl isEqualToString:@"Denmark2"]) return SCBInternationalTypeDenmark2;
+        else if ([internationl isEqualToString:@"Spain2"]) return SCBInternationalTypeSpain2;
+        else if ([internationl isEqualToString:@"LatinAmerica"]) return SCBInternationalTypeLatinAmerica;
+        else if ([internationl isEqualToString:@"Korea"]) return SCBInternationalTypeKorea;
+        else if ([internationl isEqualToString:@"Ireland"]) return SCBInternationalTypeIreland;
+        else if ([internationl isEqualToString:@"Legal"]) return SCBInternationalTypeLegal;
+        else return SCBInternationalTypeUSA;
+    } else
+        return SCBInternationalTypeUSA;
+}
+
+- (SCBFontStyleType)getFont:(NSString *)font {
+    if (font != nil && font != (id)[NSNull null]){
+        if ([font isEqualToString:@"A"]) return SCBFontStyleTypeA;
+        else if ([font isEqualToString:@"B"]) return SCBFontStyleTypeB;
+        else return SCBFontStyleTypeA;
+    } else
+        return SCBFontStyleTypeA;
+}
+-(SCBCutPaperAction)getCutPaperAction:(NSString *)cutPaperAction {
+    if (cutPaperAction != nil && cutPaperAction != (id)[NSNull null]){
+        if([cutPaperAction isEqualToString:@"FullCut"]) return SCBCutPaperActionFullCut;
+        else if([cutPaperAction isEqualToString:@"FullCutWithFeed"]) return SCBCutPaperActionFullCutWithFeed;
+        else if([cutPaperAction isEqualToString:@"PartialCut"]) return SCBCutPaperActionPartialCut;
+        else if([cutPaperAction isEqualToString:@"PartialCutWithFeed"]) return SCBCutPaperActionPartialCutWithFeed;
+        else return SCBCutPaperActionPartialCutWithFeed;
+    }else
+        return SCBCutPaperActionPartialCutWithFeed;
+}
+-(SCBPeripheralChannel) getPeripheralChannel:(NSNumber *)peripheralChannel{
+    if (peripheralChannel != nil ){
+        if([peripheralChannel intValue]  == 1) return SCBPeripheralChannelNo1;
+        else if([peripheralChannel intValue] == 2) return SCBPeripheralChannelNo2;
+        else return SCBPeripheralChannelNo1;
+    }else
+        return SCBPeripheralChannelNo1;
+}
+-(SCBBlackMarkType) getBlackMarkType:(NSString *) blackMarkType{
+    if (blackMarkType != nil && blackMarkType != (id)[NSNull null]){
+        if([blackMarkType isEqualToString:@"Valid"]) return SCBBlackMarkTypeValid;
+        else if([blackMarkType isEqualToString:@"Invalid"]) return SCBBlackMarkTypeInvalid;
+        else if([blackMarkType isEqualToString:@"ValidWithDetection"]) return SCBBlackMarkTypeValidWithDetection;
+            else return SCBBlackMarkTypeValid;
+    }else
+        return SCBBlackMarkTypeValid;
+}
+-(SCBLogoSize) getLogoSize:(NSString *) logoSize{
+    if (logoSize != nil && logoSize != (id)[NSNull null]){
+        if([logoSize isEqualToString:@"Normal"]) return SCBLogoSizeNormal;
+        else if([logoSize isEqualToString:@"DoubleWidth"]) return SCBLogoSizeDoubleWidth;
+        else if([logoSize isEqualToString:@"DoubleHeight"]) return SCBLogoSizeDoubleHeight;
+        else if([logoSize isEqualToString:@"DoubleWidthDoubleHeight"]) return SCBLogoSizeDoubleWidthDoubleHeight;
+        else return SCBLogoSizeNormal;
+    }else
+  return SCBLogoSizeNormal;
+}
+-(SCBBarcodeSymbology) getBarcodeSymbology:(NSString *) barcodeSymbology{
+    if (barcodeSymbology != nil && barcodeSymbology != (id)[NSNull null]){
+        if([barcodeSymbology isEqualToString:@"Code128"]) return SCBBarcodeSymbologyCode128;
+        else if([barcodeSymbology isEqualToString:@"Code39"]) return SCBBarcodeSymbologyCode39;
+        else if([barcodeSymbology isEqualToString:@"Code93"]) return SCBBarcodeSymbologyCode128;
+        else if([barcodeSymbology isEqualToString:@"ITF"]) return SCBBarcodeSymbologyITF;
+        else if([barcodeSymbology isEqualToString:@"JAN8"]) return SCBBarcodeSymbologyJAN8;
+        else if([barcodeSymbology isEqualToString:@"JAN13"]) return SCBBarcodeSymbologyJAN13;
+        else if([barcodeSymbology isEqualToString:@"NW7"]) return SCBBarcodeSymbologyNW7;
+        else if([barcodeSymbology isEqualToString:@"UPCA"]) return SCBBarcodeSymbologyUPCA;
+        else if([barcodeSymbology isEqualToString:@"UPCE"]) return SCBBarcodeSymbologyUPCE;
+        else return SCBBarcodeSymbologyCode128;
+    }else
+        return SCBBarcodeSymbologyCode128;
+}
+-(SCBBarcodeWidth) getBarcodeWidth:(NSString *) barcodeWidth{
+    if (barcodeWidth != nil && barcodeWidth != (id)[NSNull null]){
+        if([barcodeWidth isEqualToString:@"Mode1"]) return SCBBarcodeWidthMode1;
+        else if([barcodeWidth isEqualToString:@"Mode2"]) return SCBBarcodeWidthMode2;
+        else if([barcodeWidth isEqualToString:@"Mode3"]) return SCBBarcodeWidthMode3;
+        else if([barcodeWidth isEqualToString:@"Mode4"]) return SCBBarcodeWidthMode4;
+        else if([barcodeWidth isEqualToString:@"Mode5"]) return SCBBarcodeWidthMode5;
+        else if([barcodeWidth isEqualToString:@"Mode6"]) return SCBBarcodeWidthMode6;
+        else if([barcodeWidth isEqualToString:@"Mode7"]) return SCBBarcodeWidthMode7;
+        else if([barcodeWidth isEqualToString:@"Mode8"]) return SCBBarcodeWidthMode8;
+        else if([barcodeWidth isEqualToString:@"Mode9"]) return SCBBarcodeWidthMode9;
+        else return SCBBarcodeWidthMode2;
+    }else
+        return SCBBarcodeWidthMode2;
+}
+-(SCBQrCodeModel) getQrCodeModel:(NSString *) qrCodeModel{
+    if (qrCodeModel != nil && qrCodeModel != (id)[NSNull null]){
+        if([qrCodeModel isEqualToString:@"No1"]) return SCBQrCodeModelNo1;
+        else if([qrCodeModel isEqualToString:@"No2"]) return SCBQrCodeModelNo2;
+        else return SCBQrCodeModelNo1;
+    }else
+        return SCBQrCodeModelNo1;
+}
+-(SCBQrCodeLevel) getQrCodeLevel:(NSString *) qrCodeLevel {
+    if (qrCodeLevel != nil && qrCodeLevel != (id)[NSNull null]){
+        if([qrCodeLevel isEqualToString:@"H"]) return SCBQrCodeLevelH;
+        else if([qrCodeLevel isEqualToString:@"L"]) return SCBQrCodeLevelL;
+        else if([qrCodeLevel isEqualToString:@"M"]) return SCBQrCodeLevelM;
+        else if([qrCodeLevel isEqualToString:@"Q"]) return SCBQrCodeLevelQ;
+        else return SCBQrCodeLevelH;
+    }else
+        return SCBQrCodeLevelH;
+}
+-(SCBBitmapConverterRotation) getBitmapConverterRotation:(NSString *) rotation {
+    if (rotation != nil && rotation != (id)[NSNull null]){
+        if([rotation isEqualToString:@"Normal"]) return SCBBitmapConverterRotationNormal;
+        else if([rotation isEqualToString:@"Left90"]) return SCBBitmapConverterRotationLeft90;
+        else if([rotation isEqualToString:@"Right90"]) return SCBBitmapConverterRotationRight90;
+        else if([rotation isEqualToString:@"Rotate180"]) return SCBBitmapConverterRotationRotate180;
+        else return SCBBitmapConverterRotationNormal;
+    }else
+        return SCBBitmapConverterRotationNormal;
 }
 
 @end
