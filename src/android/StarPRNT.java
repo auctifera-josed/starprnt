@@ -271,16 +271,20 @@ public class StarPRNT extends CordovaPlugin {
 
         for (PortInfo discovery : arrayDiscovery) {
             String portName;
-
+   
             JSONObject port = new JSONObject();
-            port.put("portName", discovery.getPortName());
+            if (discovery.getPortName().startsWith("BT:"))
+                port.put("portName", "BT:" +  discovery.getMacAddress());
+            else port.put("portName", discovery.getPortName());
 
             if (!discovery.getMacAddress().equals("")) {
 
                 port.put("macAddress", discovery.getMacAddress());
-
-                if (!discovery.getModelName().equals("")) {
-                    port.put("modelName", discovery.getModelName());
+                
+                    if (discovery.getPortName().startsWith("BT:")) {
+                        port.put("modelName", discovery.getPortName());
+                    }else if (!discovery.getModelName().equals("")){ 
+                        port.put("modelName", discovery.getModelName());
                 }
             } else if (interfaceName.equals("USB") || interfaceName.equals("All")) {
                 if (!discovery.getModelName().equals("")) {
@@ -1081,6 +1085,3 @@ public class StarPRNT extends CordovaPlugin {
 
 
 }
-
-
-

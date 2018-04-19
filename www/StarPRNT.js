@@ -69,9 +69,6 @@ module.exports = {
     setDefaultSettings: function(success, error) {
         exec(success, error, "StarPRNT", "setToDefaultSettings", []);
     },
-    // setPrintDirection: function(, direction, success, error) {
-    //     exec(success, error, "StarPRNT", "setPrintDirection", [, direction]);
-    // },
     hardReset: function(success, error) {
         exec(success, error, "StarPRNT", "hardReset", []);
     }
