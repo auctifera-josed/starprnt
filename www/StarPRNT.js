@@ -16,21 +16,42 @@ module.exports = {
     printRasterReceipt: function (port, emulation, printObj, success, error) {  //connects to printer and disconnects when done
         exec(success, error, "StarPRNT", "printRasterReceipt", [port, emulation, printObj]);
     },
-    //Android functions
 
     printImage: function (port, emulation, printObj, success, error) {  //connects to printer and disconnects when done
         exec(success, error, "StarPRNT", "printRasterData", [port, emulation, printObj]);
     },
 
-// iOS only functions
-
     openCashDrawer: function (port, emulation, success, error) {
         exec(success, error, "StarPRNT", "openCashDrawer", [port, emulation]);
     },
+
+    print: function(port, emulation, printCommands, success, error){ //exposes all methods for the CommandBuilderInterface / ISCBBuilderInterface
+        exec(success, error, "StarPRNT", "print", [port, emulation, printCommands]);
+    },
+    disconnect: function (success, error) {
+        exec(success, error, "StarPRNT", "disconnect", []);
+    },
+    connect: function (printerPort, emulation, callback) {
+        var connected = false;
+        exec(function (result) {
+            if (!connected) {
+                callback(null, result);
+                connected = true;
+            } else {
+                cordova.fireWindowEvent("starPrntData", result);
+            }
+        },
+        function (error) {
+            callback(error)
+        }, 'StarPRNT', 'connect', [printerPort, emulation]);
+    },
+
+// iOS only functions (Deprecated, use Super function print to access all the CommandBuilderInterface/ISCBBuilderInterface methods )
+
     printReceipt: function (receipt, success, error, receiptId, alignment, international, font) {
         exec(success, error, "StarPRNT", "printData", [receipt, receiptId, alignment, international, font]);
     },
-    printData: function (text, success, error) {
+    printData: function (text, emulation, success, error) {
         exec(success, error, "StarPRNT", "printRawData", [text]);
     },
     printFormattedReceipt: function(receipt, success, error) {
@@ -48,28 +69,8 @@ module.exports = {
     setDefaultSettings: function(success, error) {
         exec(success, error, "StarPRNT", "setToDefaultSettings", []);
     },
-    // setPrintDirection: function(, direction, success, error) {
-    //     exec(success, error, "StarPRNT", "setPrintDirection", [, direction]);
-    // },
     hardReset: function(success, error) {
         exec(success, error, "StarPRNT", "hardReset", []);
-    },
-    disconnect: function (success, error) {
-        exec(success, error, "StarPRNT", "disconnect", []);
-    },
-    connect: function (printerPort, callback) {
-        var connected = false;
-        exec(function (result) {
-            if (!connected) {
-                callback(null, result);
-                connected = true;
-            } else {
-                cordova.fireWindowEvent("starPrntData", result);
-            }
-        },
-        function (error) {
-            callback(error)
-        }, 'StarPRNT', 'connect', [printerPort]);
     }
 };
 
