@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-starprnt" version="2.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+<plugin id="cordova-plugin-starprnt" version="2.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
 	<name>StarPRNT</name>
 	<description>Plugin to use Star printers and connected drawer</description>
-	<author>Jose Angarita</author>
+	<author>Jose Angarita / Ruben Casas</author>
 	<keywords>print,starmicronics,star printer</keywords>
 	<license>MIT</license>
 	<engines>
