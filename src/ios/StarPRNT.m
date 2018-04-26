@@ -1200,8 +1200,11 @@ static NSString *dataCallbackId = nil;
         else if ([command valueForKey:@"append"]) [builder appendData:[[command valueForKey:@"append"] dataUsingEncoding:encoding]];
         else if ([command valueForKey:@"appendRaw"]) [builder appendRawData:[[command valueForKey:@"appendRaw"] dataUsingEncoding:encoding]];
         else if ([command valueForKey:@"appendEmphasis"]) [builder appendDataWithEmphasis:[[command valueForKey:@"appendEmphasis"] dataUsingEncoding:encoding]];
+        else if ([command valueForKey:@"enableEmphasis"]) [builder appendEmphasis:[[command valueForKey:@"enableEmphasis"] boolValue]];
         else if ([command valueForKey:@"appendInvert"]) [builder appendDataWithInvert:[[command valueForKey:@"appendInvert"] dataUsingEncoding:encoding]];
+        else if ([command valueForKey:@"enableInvert"]) [builder appendInvert:[[command valueForKey:@"enableInvert"] boolValue]];
         else if ([command valueForKey:@"appendUnderline"]) [builder appendDataWithUnderLine:[[command valueForKey:@"appendUnderline"] dataUsingEncoding:encoding]];
+        else if ([command valueForKey:@"enableUnderline"]) [builder appendUnderLine:[[command valueForKey:@"enableUnderline"] boolValue]];
         else if ([command valueForKey:@"appendLineFeed"]) [builder appendLineFeed:[[command valueForKey:@"appendLineFeed"] intValue]];
         else if ([command valueForKey:@"appendUnitFeed"]) [builder appendUnitFeed:[[command valueForKey:@"appendUnitFeed"] intValue]];
         else if ([command valueForKey:@"appendLineSpace"]) [builder appendLineSpace:[[command valueForKey:@"appendLineSpace"] intValue]];
@@ -1238,6 +1241,15 @@ static NSString *dataCallbackId = nil;
             int width = ([[command valueForKey:@"width"] intValue]) ? [[command valueForKey:@"width"] intValue]: 2;
             int height = ([[command valueForKey:@"height"] intValue]) ? [[command valueForKey:@"height"] intValue]: 2;
             [builder appendDataWithMultiple:[[command valueForKey:@"appendMultiple"] dataUsingEncoding:encoding] width:width height:height];
+        }
+        else if ([command valueForKey:@"enableMultiple"]) {
+            int width = ([[command valueForKey:@"width"] intValue]) ? [[command valueForKey:@"width"] intValue]: 1;
+            int height = ([[command valueForKey:@"height"] intValue]) ? [[command valueForKey:@"height"] intValue]: 1;
+            if([[command valueForKey:@"enableMultiple"] boolValue] == YES){
+                [builder appendMultiple:width height:height];
+            }else{
+                [builder appendMultiple:1 height:1];
+            }
         }
         else if ([command valueForKey:@"appendLogo"]) {
             if([command valueForKey:@"logoSize"]) [builder appendLogo:[self getLogoSize:[command valueForKey:@"logoSize"]]
@@ -1314,7 +1326,7 @@ static NSString *dataCallbackId = nil;
         else if ([encoding isEqualToString:@"Shift-JIS"]) return NSShiftJISStringEncoding; //Japanese
         else if ([encoding isEqualToString:@"Windows-1251"]) return NSWindowsCP1251StringEncoding; //Russian
         else if ([encoding isEqualToString:@"GB2312"]) return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000); // Simplified Chinese
-        else if ([encoding isEqualToString:@"Big5"]) return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingBig5); // Simplified Chinese
+        else if ([encoding isEqualToString:@"Big5"]) return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingBig5); // Traditional Chinese
         else if ([encoding isEqualToString:@"UTF-8"]) return NSUTF8StringEncoding; // UTF-8
         return NSWindowsCP1252StringEncoding;
 
