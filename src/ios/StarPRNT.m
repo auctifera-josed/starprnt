@@ -721,26 +721,6 @@ static NSString *dataCallbackId = nil;
     }];
 }
 
-//Page Mode is NOT supported in TSP700II
-// - (void)setPrintDirection:(CDVInvokedUrlCommand *)command {
-//     NSLog(@"setting print direction");
-//     StarIoExtEmulation emulation = StarIoExtEmulationStarLine;
-//     ISCBBuilder *builder = [StarIoExt createCommandBuilder:emulation];
-//     NSString *portName = nil;
-    
-//     if (command.arguments.count > 0) {
-//         portName = [command.arguments objectAtIndex:0];
-//     }        
-    
-//     unsigned char setPageMode[] = {0x1B, 0x1D, 0x50, 0x30};
-//     unsigned char setDirection[] = {0x1B, 0x1D, 0x50, 0x32, 0x32};
-    
-//     [builder appendBytes:setPageMode length:sizeof(setPageMode)];
-//     [builder appendBytes:setDirection length:sizeof(setDirection)];
-    
-//     [self sendCommand:[builder.commands copy] callbackId:command.callbackId];
-// }
-
 - (void)activateBlackMarkSensor:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
         ISCBBuilder *builder = [StarIoExt createCommandBuilder:StarIoExtEmulationStarLine];
@@ -848,45 +828,6 @@ static NSString *dataCallbackId = nil;
         [self sendData:@"cashDrawerClose" data:nil];
     }];
 }
-
-// - (void)onAppTerminate
-// {
-//     NSLog(@"%@ onAppTerminate!", [self class]);
-//     if (_drawerManager != nil && _drawerManager.port != nil) {
-//         [_drawerManager disconnect];
-//     }
-
-//     if (_printerManager != nil && _printerManager.port != nil) {
-//         [_printerManager disconnect];
-//     }
-// }
-
-// - (void)onMemoryWarning
-// {
-//     NSLog(@"%@ onMemoryWarning!", [self class]);
-// }
-
-// - (void)onReset
-// {
-//     NSLog(@"%@ onReset!", [self class]);
-// }
-
-// - (void)onPause
-// {
-//     NSLog(@"%@ onReset!", [self class]);
-// }
-
-// - (void)dispose
-// {
-//     NSLog(@"%@ dispose!", [self class]);
-//     if (_drawerManager != nil && _drawerManager.port != nil) {
-//         [_drawerManager disconnect];
-//     }
-
-//     if (_printerManager != nil && _printerManager.port != nil) {
-//         [_printerManager disconnect];
-//     }
-// }
 
 #pragma mark -
 #pragma mark Util
@@ -1221,6 +1162,16 @@ static NSString *dataCallbackId = nil;
                 buffer[i] = [[byteArray objectAtIndex:i] unsignedCharValue];
             }
             [builder appendBytes:buffer length:sizeof(buffer)-1];
+        }
+        else if ([command valueForKey:@"appendRawBytes"]){
+            NSMutableArray *rawByteArray = nil;
+            rawByteArray = [command valueForKey:@"appendRawBytes"];
+            int rawCount = (int)[rawByteArray count];
+            unsigned char rawBuffer[rawCount + 1];
+            for (int i=0; i< rawCount; i++){
+                rawBuffer[i] = [[rawByteArray objectAtIndex:i] unsignedCharValue];
+            }
+            [builder appendRawBytes:rawBuffer length:sizeof(rawBuffer)-1];
         }
         else if ([command valueForKey:@"appendAbsolutePosition"]){
             if([command valueForKey:@"data"]) [builder appendDataWithAbsolutePosition:[[command valueForKey:@"data"] dataUsingEncoding:encoding]

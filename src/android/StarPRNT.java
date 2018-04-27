@@ -796,6 +796,14 @@ public class StarPRNT extends CordovaPlugin {
                         byteData[j] = (byte)bytesArray.getInt(j);
                     }
                     builder.append(byteData);
+                }else if (command.has("appendRawBytes")) {
+                        JSONArray rawBytesArray = command.getJSONArray("appendRawBytes");
+                        if (rawBytesArray == null ) rawBytesArray = new JSONArray();
+                        byte[] rawByteData = new byte[rawBytesArray.length()+1];
+                        for(int j=0; j < rawBytesArray.length(); j++){
+                            rawByteData[j] = (byte)rawBytesArray.getInt(j);
+                        }
+                        builder.appendRaw(rawByteData);
                 }else if (command.has("appendAbsolutePosition")) {
                     if(command.has("data")) builder.appendAbsolutePosition((command.getString("data").getBytes(encoding)), command.getInt("appendAbsolutePosition"));
                     else builder.appendAbsolutePosition(command.getInt("appendAbsolutePosition"));
@@ -877,7 +885,6 @@ public class StarPRNT extends CordovaPlugin {
 
     //ICommandBuilder Constant Functions
     private ICommandBuilder.InternationalType getInternational(String international){
-        // I really miss case statements with Strings! but Can't be bothered installing java7+
         if(international.equals("UK")) return ICommandBuilder.InternationalType.UK;
         else if (international.equals("USA")) return ICommandBuilder.InternationalType.USA;
         else if (international.equals("France")) return ICommandBuilder.InternationalType.France;
