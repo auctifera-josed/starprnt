@@ -6,6 +6,8 @@ import org.apache.cordova.CallbackContext;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Locale;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +23,10 @@ import com.starmicronics.starioextension.StarIoExt;
 import com.starmicronics.starioextension.StarIoExt.Emulation;
 import com.starmicronics.starioextension.ICommandBuilder;
 import com.starmicronics.starioextension.ICommandBuilder.CutPaperAction;
+import com.starmicronics.starioextension.ICommandBuilder.CodePageType;
 import com.starmicronics.starioextension.StarIoExtManager;
 import com.starmicronics.starioextension.StarIoExtManagerListener;
+
 
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
@@ -271,7 +275,7 @@ public class StarPRNT extends CordovaPlugin {
 
         for (PortInfo discovery : arrayDiscovery) {
             String portName;
-   
+
             JSONObject port = new JSONObject();
             if (discovery.getPortName().startsWith("BT:"))
                 port.put("portName", "BT:" +  discovery.getMacAddress());
@@ -280,10 +284,10 @@ public class StarPRNT extends CordovaPlugin {
             if (!discovery.getMacAddress().equals("")) {
 
                 port.put("macAddress", discovery.getMacAddress());
-                
+
                     if (discovery.getPortName().startsWith("BT:")) {
                         port.put("modelName", discovery.getPortName());
-                    }else if (!discovery.getModelName().equals("")){ 
+                    }else if (!discovery.getModelName().equals("")){
                         port.put("modelName", discovery.getModelName());
                 }
             } else if (interfaceName.equals("USB") || interfaceName.equals("All")) {
@@ -761,15 +765,21 @@ public class StarPRNT extends CordovaPlugin {
     }
 
     private void appendCommands(ICommandBuilder builder, JSONArray printCommands, Context context) {
+        Charset encoding = Charset.forName("US-ASCII");
         try {
             for (int i = 0; i < printCommands.length(); i++) {
                 JSONObject command = (JSONObject) printCommands.get(i);
                 if(command.has("appendCharacterSpace")) builder.appendCharacterSpace(command.getInt("appendCharacterSpace"));
-                else if (command.has("append")) builder.append(createCpUTF8(command.getString("append")));
-                else if (command.has("appendRaw")) builder.append(createCpUTF8(command.getString("appendRaw")));
-                else if (command.has("appendEmphasis")) builder.appendEmphasis(createCpUTF8(command.getString("appendEmphasis")));
-                else if (command.has("appendInvert")) builder.appendInvert(createCpUTF8(command.getString("appendInvert")));
-                else if (command.has("appendUnderline")) builder.appendUnderLine(createCpUTF8(command.getString("appendUnderline")));
+                else if (command.has("appendEncoding")) encoding = getEncoding(command.getString("appendEncoding"));
+                else if (command.has("appendCodePage")) builder.appendCodePage(getCodePageType(command.getString("appendCodePage")));
+                else if (command.has("append")) builder.append(command.getString("append").getBytes(encoding));
+                else if (command.has("appendRaw")) builder.append(command.getString("appendRaw").getBytes(encoding));
+                else if (command.has("appendEmphasis")) builder.appendEmphasis(command.getString("appendEmphasis").getBytes(encoding));
+                else if (command.has("enableEmphasis")) builder.appendEmphasis(command.getBoolean("enableEmphasis"));
+                else if (command.has("appendInvert")) builder.appendInvert(command.getString("appendInvert").getBytes(encoding));
+                else if (command.has("enableInvert")) builder.appendInvert(command.getBoolean("enableInvert"));
+                else if (command.has("appendUnderline")) builder.appendUnderLine(command.getString("appendUnderline").getBytes(encoding));
+                else if (command.has("enableUnderline")) builder.appendUnderLine(command.getBoolean("enableUnderline"));
                 else if (command.has("appendInternational")) builder.appendInternational(getInternational(command.getString("appendInternational")));
                 else if (command.has("appendLineFeed")) builder.appendLineFeed(command.getInt("appendLineFeed"));
                 else if (command.has("appendUnitFeed")) builder.appendUnitFeed(command.getInt("appendUnitFeed"));
@@ -778,11 +788,27 @@ public class StarPRNT extends CordovaPlugin {
                 else if (command.has("appendCutPaper")) builder.appendCutPaper(getCutPaperAction(command.getString("appendCutPaper")));
                 else if (command.has("openCashDrawer")) builder.appendPeripheral(getPeripheralChannel(command.getInt("openCashDrawer")));
                 else if (command.has("appendBlackMark")) builder.appendBlackMark(getBlackMarkType(command.getString("appendBlackMark")));
-                else if (command.has("appendAbsolutePosition")) {
-                    if(command.has("data")) builder.appendAbsolutePosition((createCpUTF8(command.getString("data"))), command.getInt("appendAbsolutePosition"));
+                else if (command.has("appendBytes")) {
+                    JSONArray bytesArray = command.getJSONArray("appendBytes");
+                    if (bytesArray == null ) bytesArray = new JSONArray();
+                    byte[] byteData = new byte[bytesArray.length()+1];
+                    for(int j=0; j < bytesArray.length(); j++){
+                        byteData[j] = (byte)bytesArray.getInt(j);
+                    }
+                    builder.append(byteData);
+                }else if (command.has("appendRawBytes")) {
+                        JSONArray rawBytesArray = command.getJSONArray("appendRawBytes");
+                        if (rawBytesArray == null ) rawBytesArray = new JSONArray();
+                        byte[] rawByteData = new byte[rawBytesArray.length()+1];
+                        for(int j=0; j < rawBytesArray.length(); j++){
+                            rawByteData[j] = (byte)rawBytesArray.getInt(j);
+                        }
+                        builder.appendRaw(rawByteData);
+                }else if (command.has("appendAbsolutePosition")) {
+                    if(command.has("data")) builder.appendAbsolutePosition((command.getString("data").getBytes(encoding)), command.getInt("appendAbsolutePosition"));
                     else builder.appendAbsolutePosition(command.getInt("appendAbsolutePosition"));
                 } else if (command.has("appendAlignment")) {
-                    if(command.has("data")) builder.appendAlignment((createCpUTF8(command.getString("data"))), getAlignment(command.getString("appendAlignment")));
+                    if(command.has("data")) builder.appendAlignment((command.getString("data").getBytes(encoding)), getAlignment(command.getString("appendAlignment")));
                     else builder.appendAlignment(getAlignment(command.getString("appendAlignment")));
                 } else if (command.has("appendHorizontalTabPosition")) {
                     JSONArray tabPositionsArray = command.getJSONArray("appendHorizontalTabPosition");
@@ -802,26 +828,32 @@ public class StarPRNT extends CordovaPlugin {
                     Boolean hri = (command.has("hri") ? command.getBoolean("hri"): true);
                     if(command.has("absolutePosition")){
                         int position =  command.getInt("absolutePosition");
-                        builder.appendBarcodeWithAbsolutePosition(createCpUTF8(command.getString("appendBarcode")), barcodeSymbology, barcodeWidth, height, hri, position);
+                        builder.appendBarcodeWithAbsolutePosition(command.getString("appendBarcode").getBytes(encoding), barcodeSymbology, barcodeWidth, height, hri, position);
                     }else if(command.has("alignment")){
                         ICommandBuilder.AlignmentPosition alignmentPosition = getAlignment(command.getString("alignment"));
-                        builder.appendBarcodeWithAlignment(createCpUTF8(command.getString("appendBarcode")), barcodeSymbology, barcodeWidth, height, hri, alignmentPosition);
-                    }else builder.appendBarcode(createCpUTF8(command.getString("appendBarcode")), barcodeSymbology, barcodeWidth, height, hri);
+                        builder.appendBarcodeWithAlignment(command.getString("appendBarcode").getBytes(encoding), barcodeSymbology, barcodeWidth, height, hri, alignmentPosition);
+                    }else builder.appendBarcode(command.getString("appendBarcode").getBytes(encoding), barcodeSymbology, barcodeWidth, height, hri);
                 } else if (command.has("appendMultiple")){
-                    int width = (command.has("width") ? command.getInt("width"): 2);
-                    int height = (command.has("height") ? command.getInt("height"): 2);
-                    builder.appendMultiple(createCpUTF8(command.getString("appendMultiple")), width, height);
+                    int width = (command.has("width") ? command.getInt("width"): 1);
+                    int height = (command.has("height") ? command.getInt("height"): 1);
+                    builder.appendMultiple(command.getString("appendMultiple").getBytes(encoding), width, height);
+                } else if (command.has("enableMultiple")){
+                    int width = (command.has("width") ? command.getInt("width"): 1);
+                    int height = (command.has("height") ? command.getInt("height"): 1);
+                    Boolean enableMultiple = command.getBoolean("enableMultiple");
+                    if(enableMultiple) builder.appendMultiple(width, height);
+                    else builder.appendMultiple(1,1); // Reset to default when false sent
                 } else if (command.has("appendQrCode")){
                     ICommandBuilder.QrCodeModel qrCodeModel =  (command.has("QrCodeModel") ? getQrCodeModel(command.getString("QrCodeModel")): getQrCodeModel("No2"));
                     ICommandBuilder.QrCodeLevel qrCodeLevel = (command.has("QrCodeLevel") ? getQrCodeLevel(command.getString("QrCodeLevel")): getQrCodeLevel("H"));
                     int cell = (command.has("cell") ? command.getInt("cell"): 4);
                     if(command.has("absolutePosition")){
                         int position =  command.getInt("absolutePosition");
-                        builder.appendQrCodeWithAbsolutePosition(createCpUTF8(command.getString("appendQrCode")), qrCodeModel, qrCodeLevel, cell, position);
+                        builder.appendQrCodeWithAbsolutePosition(command.getString("appendQrCode").getBytes(encoding), qrCodeModel, qrCodeLevel, cell, position);
                     }else if(command.has("alignment")){
                         ICommandBuilder.AlignmentPosition alignmentPosition = getAlignment(command.getString("alignment"));
-                        builder.appendQrCodeWithAlignment(createCpUTF8(command.getString("appendQrCode")), qrCodeModel, qrCodeLevel, cell, alignmentPosition);
-                    }else builder.appendQrCode(createCpUTF8(command.getString("appendQrCode")), qrCodeModel, qrCodeLevel, cell);
+                        builder.appendQrCodeWithAlignment(command.getString("appendQrCode").getBytes(encoding), qrCodeModel, qrCodeLevel, cell, alignmentPosition);
+                    }else builder.appendQrCode(command.getString("appendQrCode").getBytes(encoding), qrCodeModel, qrCodeLevel, cell);
                 } else if (command.has("appendBitmap")){
                     ContentResolver contentResolver = context.getContentResolver();
                     String uriString = command.optString("appendBitmap");
@@ -853,7 +885,6 @@ public class StarPRNT extends CordovaPlugin {
 
     //ICommandBuilder Constant Functions
     private ICommandBuilder.InternationalType getInternational(String international){
-        // I really miss case statements with Strings! but Can't be bothered installing java7+
         if(international.equals("UK")) return ICommandBuilder.InternationalType.UK;
         else if (international.equals("USA")) return ICommandBuilder.InternationalType.USA;
         else if (international.equals("France")) return ICommandBuilder.InternationalType.France;
@@ -954,9 +985,99 @@ public class StarPRNT extends CordovaPlugin {
         else if(blackMarkType.equals("ValidWithDetection")) return ICommandBuilder.BlackMarkType.ValidWithDetection;
         else return ICommandBuilder.BlackMarkType.Valid;
     }
+    private ICommandBuilder.CodePageType getCodePageType(String codePageType){
+        if (codePageType.equals("CP437")) return CodePageType.CP437;
+        else if (codePageType.equals("CP737")) return CodePageType.CP737;
+        else if (codePageType.equals("CP772")) return CodePageType.CP772;
+        else if (codePageType.equals("CP774")) return CodePageType.CP774;
+        else if (codePageType.equals("CP851")) return CodePageType.CP851;
+        else if (codePageType.equals("CP852")) return CodePageType.CP852;
+        else if (codePageType.equals("CP855")) return CodePageType.CP855;
+        else if (codePageType.equals("CP857")) return CodePageType.CP857;
+        else if (codePageType.equals("CP858")) return CodePageType.CP858;
+        else if (codePageType.equals("CP860")) return CodePageType.CP860;
+        else if (codePageType.equals("CP861")) return CodePageType.CP861;
+        else if (codePageType.equals("CP862")) return CodePageType.CP862;
+        else if (codePageType.equals("CP863")) return CodePageType.CP863;
+        else if (codePageType.equals("CP864")) return CodePageType.CP864;
+        else if (codePageType.equals("CP865")) return CodePageType.CP866;
+        else if (codePageType.equals("CP869")) return CodePageType.CP869;
+        else if (codePageType.equals("CP874")) return CodePageType.CP874;
+        else if (codePageType.equals("CP928")) return CodePageType.CP928;
+        else if (codePageType.equals("CP932")) return CodePageType.CP932;
+        else if (codePageType.equals("CP999")) return CodePageType.CP999;
+        else if (codePageType.equals("CP1001")) return CodePageType.CP1001;
+        else if (codePageType.equals("CP1250")) return CodePageType.CP1250;
+        else if (codePageType.equals("CP1251")) return CodePageType.CP1251;
+        else if (codePageType.equals("CP1252")) return CodePageType.CP1252;
+        else if (codePageType.equals("CP2001")) return CodePageType.CP2001;
+        else if (codePageType.equals("CP3001")) return CodePageType.CP3001;
+        else if (codePageType.equals("CP3002")) return CodePageType.CP3002;
+        else if (codePageType.equals("CP3011")) return CodePageType.CP3011;
+        else if (codePageType.equals("CP3012")) return CodePageType.CP3012;
+        else if (codePageType.equals("CP3021")) return CodePageType.CP3021;
+        else if (codePageType.equals("CP3041")) return CodePageType.CP3041;
+        else if (codePageType.equals("CP3840")) return CodePageType.CP3840;
+        else if (codePageType.equals("CP3841")) return CodePageType.CP3841;
+        else if (codePageType.equals("CP3843")) return CodePageType.CP3843;
+        else if (codePageType.equals("CP3845")) return CodePageType.CP3845;
+        else if (codePageType.equals("CP3846")) return CodePageType.CP3846;
+        else if (codePageType.equals("CP3847")) return CodePageType.CP3847;
+        else if (codePageType.equals("CP3848")) return CodePageType.CP3848;
+        else if (codePageType.equals("UTF8")) return CodePageType.UTF8;
+        else if (codePageType.equals("Blank")) return CodePageType.Blank;
+        else return CodePageType.CP998;
+    }
+
 
     //Helper functions
 
+    private Charset getEncoding(String encoding){
+
+        if (encoding.equals("US-ASCII")) return Charset.forName("US-ASCII"); //English
+        else if (encoding.equals("Windows-1252")){
+            try {
+                return Charset.forName("Windows-1252"); //French, German, Portuguese, Spanish
+            }
+            catch (UnsupportedCharsetException e) { //not supported using UTF-8 Instead
+                return Charset.forName("UTF-8");
+            }
+        }
+        else if (encoding.equals("Shift-JIS")) {
+            try {
+                return Charset.forName("Shift-JIS"); //Japanese
+            }
+            catch (UnsupportedCharsetException e) { //not supported using UTF-8 Instead
+                return Charset.forName("UTF-8");
+            }
+        }
+        else if (encoding.equals("Windows-1251")){
+            try {
+                return Charset.forName("Windows-1251"); //Russian
+            }
+            catch (UnsupportedCharsetException e) { //not supported using UTF-8 Instead
+                return Charset.forName("UTF-8");
+            }
+        }
+        else if (encoding.equals("GB2312")) {
+            try {
+                return Charset.forName("GB2312"); // Simplified Chinese
+            }
+            catch (UnsupportedCharsetException e) { //not supported using UTF-8 Instead
+                return Charset.forName("UTF-8");
+            }
+        }
+        else if (encoding.equals("Big5")) {
+            try {
+                return Charset.forName("Big5"); // Traditional Chinese
+            }
+            catch (UnsupportedCharsetException e) { //not supported using UTF-8 Instead
+                return Charset.forName("UTF-8");
+            }
+        }
+        else if (encoding.equals("UTF-8")) return Charset.forName("UTF-8"); // UTF-8
+        else return Charset.forName("US-ASCII");
+    }
 
     private byte[] createCpUTF8(String inputText) {
         byte[] byteBuffer = null;

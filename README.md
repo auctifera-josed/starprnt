@@ -287,12 +287,19 @@ window.addEventListener('starPrntData', function (e) {
 
 | Property (Command) | Description |
 | ----------- | -------- |
-| append: string | Data (Text and Command) is added to the command buffer. Example: ```{append:"Star Clothing Boutique\n123 Star Road\nCity, State 12345\n\n"} ``` |
-| appendRaw: string | Data (Text and Command) is added to the command buffer. Example: ```{appendRaw:"Star Clothing Boutique\n123 Star Road\nCity, State 12345\n\n"}``` |
+| appendEncoding: string | Characther encoding is used to getByte data from all subsequent commands. Default 'US-ASCII' Choose the format of the return value Defined in [Encoding](#encoding) Example: ```{appendEncoding:'US-ASCII'}``` |  
+| appendCodePage: string | Select command of the code page is generated and added to the commands property.Choose the format of the return value Defined in [CodePageType](#codepagetype) Example: ```{appendCodePage:'CP858'}``` |
+| appendBytes: Array | Data (Command) is added to the command buffer. Takes an array of bytes. Example: ``` {appendBytes:[0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x2e]}``` |
+| appendRawBytes: Array | Data (Command) is added to the command buffer. Takes an array of bytes. Example: ``` {appendRawBytes:[0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x2e]} ``` |  
+| append: string | Data (Text) is added to the command buffer. Example: ```{append:"Star Clothing Boutique\n123 Star Road\nCity, State 12345\n\n"} ``` |  
+| appendRaw: string | Data (Text) is added to the command buffer. Example: ```{appendRaw:"Star Clothing Boutique\n123 Star Road\nCity, State 12345\n\n"}``` |
 |appendCharacterSpace: number | Set command of the character space is generated and added to the command buffer. Character Spacs (Unit: Dots) Example: ```{appendCharacterSpace: 4}``` |
 |appendEmphasis: string | Select command of the emphasis mode is generated and added to the command buffer. Example: ```{appendEmphasis:"SALE\n"}``` |
+|enableEmphasis: boolean | Enable emphasis mode is generated and added to the command buffer. Example: ```{enableEmphasis:true}``` |  
 | appendInvert: string | Select command of the invert mode is generated and added to the command buffer. Example: ```{appendInvert:"Refunds and Exchanges\n"}``` |
+| enableInvert: boolean | Enable invert mode is generated and added to the command buffer. Example: ```{enableInvert:true}``` |
 | appendUnderline: string | Select command of the under line mode is generated and added to the command buffer. Example: ```{appendUnderline:"30 days"}```|
+| enableUnderline: boolean| Enable under line mode is generated and added to the command buffer. Example: ```{enableUnderline:true}``` |
 | appendInternational: string | Select command of the international character mode is generated and added to the command buffer.Choose the format of the return value Defined in [InternationalType](#internationaltype) Example ```{appendInternational:'UK'}```|
 | appendLineFeed: number | Line feed command is generated and added to the command buffer. Paper feed units (Units: Lines) Example: ```{appendLineFeed:2}``` |
 | appendUnitFeed: number | Unit feed command is generated and added to the command buffer. Paper feed units (Units: Dots) Example: ```{appendUnitFeed:64}``` |
@@ -314,6 +321,7 @@ window.addEventListener('starPrntData', function (e) {
 | absolutePosition: number | Property to be used with the appendBitmap command, the appendBarcode command, or the appendQrCode command (Units:Dots). appendBitmap Example: ```{appendBitmap:uri, absolutePosition:40}```. appendBarcode Example: ```{appendBarcode:'{BStar', absolutePosition:40}```. appendQrCode Example: ```{appendQrCode:'{BStar', absolutePosition:40}```|
 | alignment: string | Property to be used with the appendBitmap command, the appendBarcode command, or the appendQrCode command (Units:Dots). Choose the format of the return value defined in  [AlignmentPosition](#alignmentposition). appendBitmap Example: ```{appendBitmap:uri, alignment:'Center'}```.appendBarcode Example: ```{appendBarcode:'{BStar', alignment:'Center'}```. appendQrCode Example: ```{appendQrCode:'{BStar', alignment:'Center'}``` |
 | appendMultiple: string | Select command of the multiple mode is generated and added to the command buffer. Additional properties: width:number, height:number. Example: ```{appendMultiple:"   $156.95\n", width:2, height:2}``` |
+| enableMultiple: boolean | Enable multiple mode is generated and added to the command buffer. Additional properties: width:number, height:number. Example: ```{enableMultiple:true, width:2, height:2}``` Disable Example: ```{enableMultiple:false}``` |   
 | appendQrCode: string | Print command of the QR code is generated and added to the command buffer. Additional Properties: QrCodeModel, QrCodeLevel, cell, absolutePosition, alignment. Example: ```{appendQrCode:"{BStar", QrCodeModel:"No2", QrCodeLevel:"L", cell: 8}``` Example with absolutePosition: ``` {appendQrCode:"{BStar", QrCodeModel:"No2", QrCodeLevel:"L", cell: 8, absolutePosition: 40 }``` Example with alignment: ```{appendQrCode:"{BStar", QrCodeModel:"No2", QrCodeLevel:"L", cell: 8, alignment:"Center" }``` | 
 | QrCodeModel: string | Property to be used with the appendQrCode command. Choose the format of the return value defined in  [QrCodeModel](#qrcodemodel). Example: ```{appendQrCode:'{BStar', QrCodeModel:'No1'}``` |
 | QrCodeLevel: string |Property to be used with the appendQrCode command. Choose the format of the return value defined in  [QrCodeLevel](#qrcodelevel) Example: ```{appendQrCode:'{BStar', QrCodeLevel:'H'}``` |
@@ -328,6 +336,59 @@ window.addEventListener('starPrntData', function (e) {
 
 ## PrintCommand Constants:
 Values for the PrintCommand properties. (Case and type sensitive)
+
+## Encoding 
+| Encoding | Languages |
+| ----------- | -------- |
+| 'US-ASCII' |  English |
+| 'Windows-1252' | French, German, Portuguese, Spanish |
+| 'Shift-JIS' | Japanese |
+| 'Windows-1251' | Russian |
+| 'GB2312' | Simplified Chinese |
+| 'Big5' | Traditional Chinese |
+| 'UTF-8' | UFT8 |
+
+## CodePageType 
+    CP737 = 'CP737',
+    CP772 = 'CP772',
+    CP774 = 'CP774',
+    CP851 = 'CP851',
+    CP852 = 'CP852',
+    CP855 = 'CP855',
+    CP857 = 'CP857',
+    CP858 = 'CP858',
+    CP860 = 'CP860',
+    CP861 = 'CP861',
+    CP862 = 'CP862',
+    CP863 = 'CP863',
+    CP864 = 'CP864',
+    CP865 = 'CP865',
+    CP869 = 'CP869',
+    CP874 = 'CP874',
+    CP928 = 'CP928',
+    CP932 = 'CP932',
+    CP999 = 'CP999',
+    CP1001 = 'CP1001',
+    CP1250 = 'CP1250',
+    CP1251 = 'CP1251',
+    CP1252 = 'CP1252',
+    CP2001 = 'CP2001',
+    CP3001 = 'CP3001',
+    CP3002 = 'CP3002',
+    CP3011 = 'CP3011',
+    CP3012 = 'CP3012',
+    CP3021 = 'CP3021',
+    CP3041 = 'CP3041',
+    CP3840 = 'CP3840',
+    CP3841 = 'CP3841',
+    CP3843 = 'CP3843',
+    CP3845 = 'CP3845',
+    CP3846 = 'CP3846',
+    CP3847 = 'CP3847',
+    CP3848 = 'CP3848',
+    UTF8 = 'UTF8',
+    Blank = 'Blank'
+}
 
 ## InternationalType
     UK = 'UK',

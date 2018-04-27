@@ -721,26 +721,6 @@ static NSString *dataCallbackId = nil;
     }];
 }
 
-//Page Mode is NOT supported in TSP700II
-// - (void)setPrintDirection:(CDVInvokedUrlCommand *)command {
-//     NSLog(@"setting print direction");
-//     StarIoExtEmulation emulation = StarIoExtEmulationStarLine;
-//     ISCBBuilder *builder = [StarIoExt createCommandBuilder:emulation];
-//     NSString *portName = nil;
-    
-//     if (command.arguments.count > 0) {
-//         portName = [command.arguments objectAtIndex:0];
-//     }        
-    
-//     unsigned char setPageMode[] = {0x1B, 0x1D, 0x50, 0x30};
-//     unsigned char setDirection[] = {0x1B, 0x1D, 0x50, 0x32, 0x32};
-    
-//     [builder appendBytes:setPageMode length:sizeof(setPageMode)];
-//     [builder appendBytes:setDirection length:sizeof(setDirection)];
-    
-//     [self sendCommand:[builder.commands copy] callbackId:command.callbackId];
-// }
-
 - (void)activateBlackMarkSensor:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
         ISCBBuilder *builder = [StarIoExt createCommandBuilder:StarIoExtEmulationStarLine];
@@ -849,51 +829,12 @@ static NSString *dataCallbackId = nil;
     }];
 }
 
-// - (void)onAppTerminate
-// {
-//     NSLog(@"%@ onAppTerminate!", [self class]);
-//     if (_drawerManager != nil && _drawerManager.port != nil) {
-//         [_drawerManager disconnect];
-//     }
-
-//     if (_printerManager != nil && _printerManager.port != nil) {
-//         [_printerManager disconnect];
-//     }
-// }
-
-// - (void)onMemoryWarning
-// {
-//     NSLog(@"%@ onMemoryWarning!", [self class]);
-// }
-
-// - (void)onReset
-// {
-//     NSLog(@"%@ onReset!", [self class]);
-// }
-
-// - (void)onPause
-// {
-//     NSLog(@"%@ onReset!", [self class]);
-// }
-
-// - (void)dispose
-// {
-//     NSLog(@"%@ dispose!", [self class]);
-//     if (_drawerManager != nil && _drawerManager.port != nil) {
-//         [_drawerManager disconnect];
-//     }
-
-//     if (_printerManager != nil && _printerManager.port != nil) {
-//         [_printerManager disconnect];
-//     }
-// }
-
 #pragma mark -
 #pragma mark Util
 #pragma mark -
 
 - (unsigned char *)getCommandAsBytes:(NSMutableArray *)command {
-    unsigned char *buffer = (unsigned char *)calloc([command count], sizeof(unsigned char));
+     unsigned char *buffer = (unsigned char *)calloc([command count], sizeof(unsigned char));
     for (int i=0; i<[command count]; i++)
         buffer[i] = [[command objectAtIndex:i] unsignedCharValue];
     return buffer;
@@ -1190,16 +1131,21 @@ static NSString *dataCallbackId = nil;
 -(void)appendCommands:(ISCBBuilder *)builder
        printCommands:(NSArray *)printCommands {
     
-    NSStringEncoding encoding = NSWindowsCP1252StringEncoding;
+    NSStringEncoding encoding = NSASCIIStringEncoding;
     
     for (id command in printCommands){
         if ([command valueForKey:@"appendInternational"]) [builder appendInternational:[self getInternational:[command valueForKey:@"appendInternational"]]];
         else if ([command valueForKey:@"appendCharacterSpace"]) [builder appendCharacterSpace:[[command valueForKey:@"appendCharacterSpace"] intValue]];
+        else if ([command valueForKey:@"appendEncoding"]) encoding = [self getEncoding:[command valueForKey:@"appendEncoding"]];
+        else if ([command valueForKey:@"appendCodePage"]) [builder appendCodePage:[self getCodePageType:[command valueForKey:@"appendCodePage"]]];
         else if ([command valueForKey:@"append"]) [builder appendData:[[command valueForKey:@"append"] dataUsingEncoding:encoding]];
         else if ([command valueForKey:@"appendRaw"]) [builder appendRawData:[[command valueForKey:@"appendRaw"] dataUsingEncoding:encoding]];
         else if ([command valueForKey:@"appendEmphasis"]) [builder appendDataWithEmphasis:[[command valueForKey:@"appendEmphasis"] dataUsingEncoding:encoding]];
+        else if ([command valueForKey:@"enableEmphasis"]) [builder appendEmphasis:[[command valueForKey:@"enableEmphasis"] boolValue]];
         else if ([command valueForKey:@"appendInvert"]) [builder appendDataWithInvert:[[command valueForKey:@"appendInvert"] dataUsingEncoding:encoding]];
+        else if ([command valueForKey:@"enableInvert"]) [builder appendInvert:[[command valueForKey:@"enableInvert"] boolValue]];
         else if ([command valueForKey:@"appendUnderline"]) [builder appendDataWithUnderLine:[[command valueForKey:@"appendUnderline"] dataUsingEncoding:encoding]];
+        else if ([command valueForKey:@"enableUnderline"]) [builder appendUnderLine:[[command valueForKey:@"enableUnderline"] boolValue]];
         else if ([command valueForKey:@"appendLineFeed"]) [builder appendLineFeed:[[command valueForKey:@"appendLineFeed"] intValue]];
         else if ([command valueForKey:@"appendUnitFeed"]) [builder appendUnitFeed:[[command valueForKey:@"appendUnitFeed"] intValue]];
         else if ([command valueForKey:@"appendLineSpace"]) [builder appendLineSpace:[[command valueForKey:@"appendLineSpace"] intValue]];
@@ -1207,6 +1153,26 @@ static NSString *dataCallbackId = nil;
         else if ([command valueForKey:@"appendCutPaper"]) [builder appendCutPaper:[self getCutPaperAction:[command valueForKey:@"appendCutPaper"]]];
         else if ([command valueForKey:@"openCashDrawer"])[builder appendPeripheral:[self getPeripheralChannel:[command valueForKey:@"openCashDrawer"]]];
         else if ([command valueForKey:@"appendBlackMark"]) [builder appendBlackMark:[self getBlackMarkType:[command valueForKey:@"appendBlackMark"]]];
+        else if ([command valueForKey:@"appendBytes"]){
+            NSMutableArray *byteArray = nil;
+            byteArray = [command valueForKey:@"appendBytes"];
+            int count = (int)[byteArray count];
+            unsigned char buffer[count + 1];
+            for (int i=0; i< count; i++){
+                buffer[i] = [[byteArray objectAtIndex:i] unsignedCharValue];
+            }
+            [builder appendBytes:buffer length:sizeof(buffer)-1];
+        }
+        else if ([command valueForKey:@"appendRawBytes"]){
+            NSMutableArray *rawByteArray = nil;
+            rawByteArray = [command valueForKey:@"appendRawBytes"];
+            int rawCount = (int)[rawByteArray count];
+            unsigned char rawBuffer[rawCount + 1];
+            for (int i=0; i< rawCount; i++){
+                rawBuffer[i] = [[rawByteArray objectAtIndex:i] unsignedCharValue];
+            }
+            [builder appendRawBytes:rawBuffer length:sizeof(rawBuffer)-1];
+        }
         else if ([command valueForKey:@"appendAbsolutePosition"]){
             if([command valueForKey:@"data"]) [builder appendDataWithAbsolutePosition:[[command valueForKey:@"data"] dataUsingEncoding:encoding]
                                                                              position:[[command valueForKey:@"appendAbsolutePosition"] intValue]];
@@ -1226,6 +1192,15 @@ static NSString *dataCallbackId = nil;
             int width = ([[command valueForKey:@"width"] intValue]) ? [[command valueForKey:@"width"] intValue]: 2;
             int height = ([[command valueForKey:@"height"] intValue]) ? [[command valueForKey:@"height"] intValue]: 2;
             [builder appendDataWithMultiple:[[command valueForKey:@"appendMultiple"] dataUsingEncoding:encoding] width:width height:height];
+        }
+        else if ([command valueForKey:@"enableMultiple"]) {
+            int width = ([[command valueForKey:@"width"] intValue]) ? [[command valueForKey:@"width"] intValue]: 1;
+            int height = ([[command valueForKey:@"height"] intValue]) ? [[command valueForKey:@"height"] intValue]: 1;
+            if([[command valueForKey:@"enableMultiple"] boolValue] == YES){
+                [builder appendMultiple:width height:height];
+            }else{
+                [builder appendMultiple:1 height:1];
+            }
         }
         else if ([command valueForKey:@"appendLogo"]) {
             if([command valueForKey:@"logoSize"]) [builder appendLogo:[self getLogoSize:[command valueForKey:@"logoSize"]]
@@ -1293,8 +1268,24 @@ static NSString *dataCallbackId = nil;
         
     }
     
-    
 }
+
+- (NSStringEncoding)getEncoding:(NSString *)encoding {
+    if (encoding != nil && encoding != (id)[NSNull null]){
+        if ([encoding isEqualToString:@"US-ASCII"]) return NSASCIIStringEncoding; //English
+        else if ([encoding isEqualToString:@"Windows-1252"]) return NSWindowsCP1252StringEncoding; //French, German, Portuguese, Spanish
+        else if ([encoding isEqualToString:@"Shift-JIS"]) return NSShiftJISStringEncoding; //Japanese
+        else if ([encoding isEqualToString:@"Windows-1251"]) return NSWindowsCP1251StringEncoding; //Russian
+        else if ([encoding isEqualToString:@"GB2312"]) return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000); // Simplified Chinese
+        else if ([encoding isEqualToString:@"Big5"]) return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingBig5); // Traditional Chinese
+        else if ([encoding isEqualToString:@"UTF-8"]) return NSUTF8StringEncoding; // UTF-8
+        return NSWindowsCP1252StringEncoding;
+
+    } else {
+        return NSWindowsCP1252StringEncoding;
+    }
+}
+
 
 #pragma mark -
 #pragma mark ISCBBuilder Constants
@@ -1342,6 +1333,54 @@ static NSString *dataCallbackId = nil;
     } else
         return SCBFontStyleTypeA;
 }
+
+- (SCBCodePageType)getCodePageType:(NSString *)codePageType {
+    if (codePageType != nil && codePageType != (id)[NSNull null]){
+        if ([codePageType isEqualToString:@"CP437"]) return SCBCodePageTypeCP437;
+        else if ([codePageType isEqualToString:@"CP737"]) return SCBCodePageTypeCP737;
+        else if ([codePageType isEqualToString:@"CP772"]) return SCBCodePageTypeCP772;
+        else if ([codePageType isEqualToString:@"CP774"]) return SCBCodePageTypeCP774;
+        else if ([codePageType isEqualToString:@"CP851"]) return SCBCodePageTypeCP851;
+        else if ([codePageType isEqualToString:@"CP852"]) return SCBCodePageTypeCP852;
+        else if ([codePageType isEqualToString:@"CP855"]) return SCBCodePageTypeCP855;
+        else if ([codePageType isEqualToString:@"CP857"]) return SCBCodePageTypeCP857;
+        else if ([codePageType isEqualToString:@"CP858"]) return SCBCodePageTypeCP858;
+        else if ([codePageType isEqualToString:@"CP860"]) return SCBCodePageTypeCP860;
+        else if ([codePageType isEqualToString:@"CP861"]) return SCBCodePageTypeCP861;
+        else if ([codePageType isEqualToString:@"CP862"]) return SCBCodePageTypeCP862;
+        else if ([codePageType isEqualToString:@"CP863"]) return SCBCodePageTypeCP863;
+        else if ([codePageType isEqualToString:@"CP864"]) return SCBCodePageTypeCP864;
+        else if ([codePageType isEqualToString:@"CP865"]) return SCBCodePageTypeCP866;
+        else if ([codePageType isEqualToString:@"CP869"]) return SCBCodePageTypeCP869;
+        else if ([codePageType isEqualToString:@"CP874"]) return SCBCodePageTypeCP874;
+        else if ([codePageType isEqualToString:@"CP928"]) return SCBCodePageTypeCP928;
+        else if ([codePageType isEqualToString:@"CP932"]) return SCBCodePageTypeCP932;
+        else if ([codePageType isEqualToString:@"CP999"]) return SCBCodePageTypeCP999;
+        else if ([codePageType isEqualToString:@"CP1001"]) return SCBCodePageTypeCP1001;
+        else if ([codePageType isEqualToString:@"CP1250"]) return SCBCodePageTypeCP1250;
+        else if ([codePageType isEqualToString:@"CP1251"]) return SCBCodePageTypeCP1251;
+        else if ([codePageType isEqualToString:@"CP1252"]) return SCBCodePageTypeCP1252;
+        else if ([codePageType isEqualToString:@"CP2001"]) return SCBCodePageTypeCP2001;
+        else if ([codePageType isEqualToString:@"CP3001"]) return SCBCodePageTypeCP3001;
+        else if ([codePageType isEqualToString:@"CP3002"]) return SCBCodePageTypeCP3002;
+        else if ([codePageType isEqualToString:@"CP3011"]) return SCBCodePageTypeCP3011;
+        else if ([codePageType isEqualToString:@"CP3012"]) return SCBCodePageTypeCP3012;
+        else if ([codePageType isEqualToString:@"CP3021"]) return SCBCodePageTypeCP3021;
+        else if ([codePageType isEqualToString:@"CP3041"]) return SCBCodePageTypeCP3041;
+        else if ([codePageType isEqualToString:@"CP3840"]) return SCBCodePageTypeCP3840;
+        else if ([codePageType isEqualToString:@"CP3841"]) return SCBCodePageTypeCP3841;
+        else if ([codePageType isEqualToString:@"CP3843"]) return SCBCodePageTypeCP3843;
+        else if ([codePageType isEqualToString:@"CP3845"]) return SCBCodePageTypeCP3845;
+        else if ([codePageType isEqualToString:@"CP3846"]) return SCBCodePageTypeCP3846;
+        else if ([codePageType isEqualToString:@"CP3847"]) return SCBCodePageTypeCP3847;
+        else if ([codePageType isEqualToString:@"CP3848"]) return SCBCodePageTypeCP3848;
+        else if ([codePageType isEqualToString:@"UTF8"]) return SCBCodePageTypeUTF8;
+        else if ([codePageType isEqualToString:@"Blank"]) return SCBCodePageTypeBlank;
+        else return SCBCodePageTypeCP998;
+    } else
+        return SCBCodePageTypeCP998;
+}
+
 -(SCBCutPaperAction)getCutPaperAction:(NSString *)cutPaperAction {
     if (cutPaperAction != nil && cutPaperAction != (id)[NSNull null]){
         if([cutPaperAction isEqualToString:@"FullCut"]) return SCBCutPaperActionFullCut;
