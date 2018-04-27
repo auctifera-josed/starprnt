@@ -63,6 +63,37 @@ starprnt.printRawText(null,"StarLine", printObj,
 function(result){console.log(result)}, function(error){ console.log(error) });
 console.log(result)}, function(error){console.log(error)}); 
 ```
+# Printing Special Characters ( £, € )
+To print special characters using the print() function, select the correct [Encoding](#encoding), [CodePageType](#codepagetype) and [International](#internationaltype) then send the bytes using the appendBytes command.
+
+ ## Pound Sign (£) Example:
+ 
+ [CodePage 858](https://en.wikipedia.org/wiki/Code_page_858)
+ 
+ ```javascript 
+ var commands = [];
+ commands.push({appendCodePage:'CP858'});
+             commands.push({appendEncoding:'US-ASCII'});
+             commands.push({appendInternational: 'UK'});
+             commands.push({appendBytes:[0x9c]});
+ starprnt.print("TCP:192.168.1.1","StarLine", commands, 
+ function(result){console.log(result)}, function(error){ console.log(error) }); 
+```
+
+ ## Euro Sign (€) Example:
+ 
+ [CodePage 858](https://en.wikipedia.org/wiki/Code_page_858)
+ 
+ ```javascript 
+ var commands = [];
+ commands.push({appendCodePage:'CP858'});
+             commands.push({appendEncoding:'Windows-1252'});
+             commands.push({appendInternational: 'Spain'});
+             commands.push({appendBytes:[0xd5]});
+ starprnt.print("TCP:192.168.1.1","StarLine", commands, 
+ function(result){console.log(result)}, function(error){ console.log(error) }); 
+```
+
 # API Reference:
 
 - [portDiscovery(type, success, error)](#port-discovery)
