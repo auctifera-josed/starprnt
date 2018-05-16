@@ -31,7 +31,7 @@ module.exports = {
     disconnect: function (success, error) {
         exec(success, error, "StarPRNT", "disconnect", []);
     },
-    connect: function (printerPort, emulation, callback) {
+    connect: function (printerPort, emulation, hasBarcodeReader, callback) {
         var connected = false;
         exec(function (result) {
             if (!connected) {
@@ -43,7 +43,7 @@ module.exports = {
         },
         function (error) {
             callback(error)
-        }, 'StarPRNT', 'connect', [printerPort, emulation]);
+        }, 'StarPRNT', 'connect', [printerPort, emulation, !!hasBarcodeReader]);
     },
 
 // iOS only functions (Deprecated, use Super function print to access all the CommandBuilderInterface/ISCBBuilderInterface methods )
