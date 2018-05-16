@@ -14,7 +14,7 @@ static NSString *dataCallbackId = nil;
 
 - (void)disconnect:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
-        if (_printerManager != nil && _printerManager.port != nil) {
+        if (_printerManager != nil) {
             [_printerManager disconnect];
         }
         CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Printer Disconnected!"];
@@ -26,18 +26,27 @@ static NSString *dataCallbackId = nil;
     [self.commandDelegate runInBackground:^{
             NSString *printerPort = nil;
             NSString *emulation = @"StarLine";
+            NSNumber *hasBarcodeReader = nil;
         
         if (command.arguments.count > 0) {
             printerPort = [command.arguments objectAtIndex:0];
             emulation = [command.arguments objectAtIndex:1];
+            hasBarcodeReader = [command.arguments objectAtIndex:2];
         }
         NSString *portSettings = [self getPortSettingsOption:emulation];
         
         if (printerPort != nil && printerPort != (id)[NSNull null]){
+            if ([hasBarcodeReader isEqual:@(YES)]) {
+                _printerManager = [[StarIoExtManager alloc] initWithType:StarIoExtManagerTypeWithBarcodeReader
+                                                                portName:printerPort
+                                                            portSettings:portSettings
+                                                         ioTimeoutMillis:10000];
+            } else {
             _printerManager = [[StarIoExtManager alloc] initWithType:StarIoExtManagerTypeStandard
                                                               portName:printerPort
                                                           portSettings:portSettings
                                                        ioTimeoutMillis:10000];
+            }
             
             _printerManager.delegate = self;
         }
@@ -46,13 +55,21 @@ static NSString *dataCallbackId = nil;
             [_printerManager disconnect];
         }
 
+        BOOL connectResult = NO;
+        
         if (_printerManager != nil){
-            [_printerManager connect];
+            connectResult = [_printerManager connect];
+        }
+
+        CDVPluginResult *result = nil;
+
+        if (connectResult == YES) {
+            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Printer Connected"];
+        } else {
+            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Printer not connected"];
         }
 
         dataCallbackId = command.callbackId;
-        CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Printer Connected"];
-        // CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:[_printerManager connect]];
         [result setKeepCallbackAsBool:YES];
         [self.commandDelegate sendPluginResult:result callbackId:dataCallbackId];
     }];
@@ -826,6 +843,43 @@ static NSString *dataCallbackId = nil;
 -(void)didCashDrawerClose {
     [self.commandDelegate runInBackground:^{
         [self sendData:@"cashDrawerClose" data:nil];
+    }];
+}
+
+
+-(void)didBarcodeReaderImpossible {
+    [self.commandDelegate runInBackground:^{
+        [self sendData:@"barcodeReaderImpossible" data:nil];
+    }];
+}
+
+-(void)didBarcodeReaderConnect {
+    [self.commandDelegate runInBackground:^{
+        [self sendData:@"barcodeReaderConnect" data:nil];
+    }];
+}
+
+-(void)didBarcodeReaderDisconnect {
+    [self.commandDelegate runInBackground:^{
+        [self sendData:@"barcodeReaderDisconnect" data:nil];
+    }];
+}
+
+- (void)didBarcodeDataReceive:(NSData *)data {
+    [self.commandDelegate runInBackground:^{
+        NSMutableString *text = [NSMutableString stringWithString:@""];
+        const uint8_t *p = [data bytes];
+        for (int i = 0; i < data.length; i++) {
+            uint8_t ch = *(p + i);
+            if(ch >= 0x20 && ch <= 0x7f) {
+                [text appendFormat:@"%c", (char) ch];
+            }
+            else if (ch == 0x0d) {
+                // text = [NSMutableString stringWithString:@""];
+            }
+        }
+            
+        [self sendData:@"barcodeDataReceive" data:text];
     }];
 }
 
