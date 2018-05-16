@@ -359,7 +359,7 @@ public class StarPRNT extends CordovaPlugin {
 
 
     }
-    private void connect(String portName, String portSettings, CallbackContext callbackContext) {
+    private void connect(String portName, String portSettings, Boolean hasBarcodeReader, CallbackContext callbackContext) {
 
         final Context context = this.cordova.getActivity();
         final String _portName = portName;
@@ -369,7 +369,7 @@ public class StarPRNT extends CordovaPlugin {
         if(starIoExtManager != null && starIoExtManager.getPort() != null){
             starIoExtManager.disconnect(null);
         }
-        starIoExtManager = new StarIoExtManager(StarIoExtManager.Type.Standard, _portName, _portSettings, 10000, context);
+        starIoExtManager = new StarIoExtManager(hasBarcodeReader ? StarIoExtManager.Type.WithBarcodeReader : StarIoExtManager.Type.Standard, _portName, _portSettings, 10000, context);
         starIoExtManager.setListener(starIoExtManagerListener);
 
         cordova.getThreadPool()
@@ -1175,6 +1175,26 @@ public class StarPRNT extends CordovaPlugin {
         @Override
         public void onCashDrawerClose() {
             sendEvent("cashDrawerClose", null);
+        }
+
+        @Override
+        public void onBarcodeReaderImpossible() {
+            sendEvent("barcodeReaderImpossible", null);
+        }
+
+        @Override
+        public void onBarcodeReaderConnect() {
+            sendEvent("barcodeReaderConnect", null);
+        }
+
+        @Override
+        public void onBarcodeReaderDisconnect() {
+            sendEvent("barcodeReaderDisconnect", null);
+        }
+
+        @Override
+        public void onBarcodeDataReceive(byte[] data) {
+            sendEvent("barcodeDataReceive", new String(data));
         }
 
     };
