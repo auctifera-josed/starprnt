@@ -7,6 +7,7 @@ Cordova plugin for using [Star micronics printers](http://www.starmicronics.com/
 This plugin defines global starprnt object.
 
 Although in the global scope, it is not available until after the deviceready event.
+
 ```javascript
 document.addEventListener("deviceready", onDeviceReady, false);
 function onDeviceReady() {
@@ -14,12 +15,13 @@ function onDeviceReady() {
 }
 ```
 
-# Example
+## Example
+
 **Ionic 1 example app:** [https://github.com/infoxicator/StarprntDemo-Ionic1](https://github.com/infoxicator/StarprntDemo-Ionic1)
 
 **Ionic 2/3 example app:** [https://github.com/infoxicator/StarprnDemoIonicV2](https://github.com/infoxicator/StarprnDemoIonicV2)
 
-# Install
+## Install
 
 Cordova: `cordova plugin add cordova-plugin-starprnt`
 
@@ -27,74 +29,97 @@ Github: `cordova plugin add https://github.com/auctifera-josed/starprnt`
 
 **Warning:** when updating you should run first `ionic cordova plugin rm cordova-plugin-starprnt` and then install again
 
-# Example
+## Example
 
 ```javascript
-starprnt.portDiscovery('All', 
-function(result){ console.log(result)}, function(error){ console.log(error) });
+starprnt.portDiscovery('All', function(result) {
+        console.log(result);
+    },
+    function(error){
+        console.log(error);
+    });
 ```
+
 Success Log Example: ```console[{modelName: "TSP700II", macAddress: "00:00:00:00", portName: "TCP:192.168.1.1"}]```
 
-# SMPort Example
-SMPort opens the connection to the printer and closes it after the commands are successfully sent.
-```javascript
+## SMPort Example
 
+SMPort opens the connection to the printer and closes it after the commands are successfully sent.
+
+```javascript
 printObj = {
-text:"Star Clothing Boutique\n123 Star Road\nCity, State 12345\n\n",
-cutReceipt:"true",
-openCashDrawer: "true"
+    text:"Star Clothing Boutique\n123 Star Road\nCity, State 12345\n\n",
+    cutReceipt:"true",
+    openCashDrawer: "true"
 }
-starprnt.printRawText("TCP:192.168.1.1","StarLine", printObj, 
-function(result){console.log(result)}, function(error){ console.log(error) }); 
+starprnt.printRawText("TCP:192.168.1.1","StarLine", printObj, function(result){
+        console.log(result);
+    },
+    function(error) {
+        console.log(error);
+    });
 ```
 
-# StarIOExtManager Example
+## StarIOExtManager Example
+
 StarIOExtManager Allows you to connect to the printer and listen for hardware events, you will need to manually open and close the connection.
 
 ```javascript
-starprnt.connect("TCP:192.168.1.1","StarLine", function(err,res){});
+starprnt.connect("TCP:192.168.1.1","StarLine", function(err,res) {});
 printObj = {
-text:"Star Clothing Boutique\n123 Star Road\nCity, State 12345\n\n",
-cutReceipt:"true",
-openCashDrawer: "true"
+    text:"Star Clothing Boutique\n123 Star Road\nCity, State 12345\n\n",
+    cutReceipt:"true",
+    openCashDrawer: "true"
 }
 /*Send null to use a printer connected via StarIOExtManager using the connect() function*/
-starprnt.printRawText(null,"StarLine", printObj, 
-function(result){console.log(result)}, function(error){ console.log(error) });
-console.log(result)}, function(error){console.log(error)}); 
+starprnt.printRawText(null, "StarLine", printObj, function (result) {
+        console.log(result);
+    },
+    function(error){
+        console.log(error);
+    });
 ```
-# Printing Special Characters ( £, € )
+
+## Printing Special Characters ( £, € )
+
 To print special characters using the print() function, select the correct [Encoding](#encoding), [CodePageType](#codepagetype) and [International](#internationaltype) then send the bytes using the appendBytes command.
 
- ## Pound Sign (£) Example:
- 
+## Pound Sign (£) Example
+
  [CodePage 858](https://en.wikipedia.org/wiki/Code_page_858)
- 
- ```javascript 
+
+ ```javascript
  var commands = [];
  commands.push({appendCodePage:'CP858'});
              commands.push({appendEncoding:'US-ASCII'});
              commands.push({appendInternational: 'UK'});
              commands.push({appendBytes:[0x9c]});
- starprnt.print("TCP:192.168.1.1","StarLine", commands, 
- function(result){console.log(result)}, function(error){ console.log(error) }); 
+ starprnt.print("TCP:192.168.1.1","StarLine", commands, function(result) {
+        console.log(result);
+     },
+     function(error){
+        console.log(error);
+    });
 ```
 
- ## Euro Sign (€) Example:
- 
+## Euro Sign (€) Example
+
  [CodePage 858](https://en.wikipedia.org/wiki/Code_page_858)
- 
+
  ```javascript 
  var commands = [];
  commands.push({appendCodePage:'CP858'});
              commands.push({appendEncoding:'Windows-1252'});
              commands.push({appendInternational: 'Spain'});
              commands.push({appendBytes:[0xd5]});
- starprnt.print("TCP:192.168.1.1","StarLine", commands, 
- function(result){console.log(result)}, function(error){ console.log(error) }); 
+ starprnt.print("TCP:192.168.1.1","StarLine", commands, function(result) {
+        console.log(result);
+     }, function(error) {
+         console.log(error);
+    });
 ```
 
-# API Reference:
+## API Reference
 
 - [portDiscovery(type, success, error)](#port-discovery)
 - [checkStatus(port, emulation, success, error)](#check-status)
@@ -106,15 +131,16 @@ To print special characters using the print() function, select the correct [Enco
 - [disconnect(success, error)](#disconnect)
 - [openCashDrawer(port, emulation, success, error)](#open-cash-drawer)
 
-# Events:
+### Events
 
 - [PrinterEvents](#printer-events)
 - [Cash Drawer Events](#cash-drawer-events)
- 
-# PrintCommand:
+
+### PrintCommand
+
 List of [commands](#printcommand-object) available through the print() function
 
-# PrintCommand Constants:
+### PrintCommand Constants
 
 - [InternationalType](#internationaltype)
 - [FontStyleType](#fontstyletype)
@@ -128,29 +154,31 @@ List of [commands](#printcommand-object) available through the print() function
 - [QrCodeLevel](#qrcodelevel)
 - [BitmapConverterRotation](#bitmapconverterrotation)
 
-
-## Functions
+### Functions
 
 Almost all the methods take success an error functions as parameters, these are callback functions to execute in either case. They are not listed in the parameters for simplicity.
 
 Note: asterisk (*) indicates a required parameter
 
-## Port discovery
+### Port discovery
+
 The `portDiscovery(type, success, error)` Find available printers
 
 | Paremeter | Description | Type/Example |
 | ----------- | -------- | ---------- |
 | type* | Port types are: 'All', 'Bluetooth', 'USB', 'LAN' | String |
 
-## Check Status
-The `checkStatus(port, emulation, success, error)` returns the current status of the printer, as well as model number and firmware information.
+### Check Status
+
+The `checkStatus(port, emulation, success, error)` returns the current status of the printer, as well as model number and firmware information. *Checking status of a printer while connected to that printer can produce unexpected results.*
 
 | Paremeter | Description | Type/Example |
 | ----------- | -------- | ---------- |
 | port* | Printer port name i.e BT:StarMicronics | String: "TCP:192.168.1.1" |
 | emulation* | Emulation type depending on the printer model | String: [Emulation](#emulation) |
 
-## Print Raw Text
+### Print Raw Text
+
 The `printRawText(port, emulation, printObj, success, error)` Prints plain text and command
 
 | Paremeter | Description | Type/Example |
@@ -161,13 +189,13 @@ The `printRawText(port, emulation, printObj, success, error)` Prints plain text 
 
 ```javascript
 var printObj = {
-text:"Star Clothing Boutique\n123 Star Road\nCity, State 12345\n\n",
-cutReceipt:true, // optional - Defaults to true
-openCashDrawer:true // optional -Defaults to true
+    text:"Star Clothing Boutique\n123 Star Road\nCity, State 12345\n\n",
+    cutReceipt:true, // optional - Defaults to true
+    openCashDrawer:true // optional -Defaults to true
 }
 ```
 
-## Print Raster Receipt
+### Print Raster Receipt
 
 The `printRasterReceipt(port, emulation, rasterObj, success, error)` Converts the text into a bitmap image and sends it to the printer
 
@@ -212,7 +240,7 @@ var rasterObj = {
         };
 ```
 
-## Print Image
+### Print Image
 
 The `printImage(port, emulation, imageObj, success, error)` prints a picture from the photo library or camera, Gets an image from a string URI and converts it to bitmap to send it to the printer.
 
@@ -231,7 +259,7 @@ The `printImage(port, emulation, imageObj, success, error)` prints a picture fro
 };
 ```
 
-## Print 
+### Print
 
 The `print(port, emulation, CommandsArray, success, error)` Sends an Array of commands to the command buffer using the Android ICommandBuilderInterface or iOS ISCBBuilderInterface
 
@@ -242,41 +270,47 @@ The `print(port, emulation, CommandsArray, success, error)` Sends an Array of co
 | CommandsArray* | Each command in the array should be an instance of the [PrintCommand Object](#printcommand-object)  | Array:  [{append:"text"}, {"openCashDrawer: 1"}] |
 
 ```javascript
- var commandsArray = [];
- commandsArray.push({appendInternational: 'UK'});
-             commandsArray.push({appendLogo:1,  //Logo number configured using Star Print utility
-                            logoSize:"Normal"})
-             commandsArray.push({appendAlignment:"Center"});
-             commandsArray.push({append: "Star Clothing Boutique\n"});
-             commandsArray.push({appendCutPaper:'PartialCutWithFeed'});
-};
+var commandsArray = [];
+commandsArray.push({appendInternational: 'UK'});
+commandsArray.push({
+    appendLogo:1,  //Logo number configured using Star Print utility
+    logoSize:"Normal"
+});
+commandsArray.push({appendAlignment:"Center"});
+commandsArray.push({append: "Star Clothing Boutique\n"});
+commandsArray.push({appendCutPaper:'PartialCutWithFeed'});
 ```
 
-## Connect
-The `connect(printerPort, emulation, function(err,res){})` function allows to 'connect' to the peripheral, to keep alive the connection between the device and the peripheral.
+### Connect
+
+The `connect(printerPort, emulation, hasBarcodeReader, function(err,res){})` function allows to 'connect' to the peripheral, to keep alive the connection between the device and the peripheral.
 
 | Parameter | Description | Type/Example |
 | ----------- | -------- | ---------- |
 | port | Printer port name i.e BT:StarMicronics | String: "BT:StarMicronics" |
+| emulation | Printer emulation | StarPRNT, StarLine, etc... (see Emulation section below) |
+| hasBarcodeReader | If device has an attached barcode reader | true or false (mPOP device has a barcode reader) |
 | callback* | A callback function | function(err, res){} |
 
-Example:
 ```javascript
-starprnt.connect("BT:StarMicronics", 'EscPosMobile', function(err,res){});
+starprnt.connect("BT:StarMicronics", 'EscPosMobile', false, function(err,res){});
 ```
 
 **Notes:**
+
 - You need to connect before printing if using StarIOExtManager
 - You should call this function on app **resume** event if you have disconnected on **pause** event
 - After connecting the window event starPrntData stars firing with the printer status
 
-## Disconnect
+### Disconnect
+
 The `disconnect(success, error)` function allows to disconnect (i.e. close the connection to the peripherals), this is useful to avoid keeping alive a connection when not in the app to save device battery (or energy consumption).
 
 **Notes:**
 - You should call this function on app **pause** event or when the app is closed
 
-## Open Cash Drawer
+### Open Cash Drawer
+
 The `openCashDrawer(port, emulation, success, error)` sends an appendPeripheral command to the printer for channels No1 and No2
 
 | Paremeter | Description | Type/Example |
@@ -284,20 +318,27 @@ The `openCashDrawer(port, emulation, success, error)` sends an appendPeripheral 
 | port* | Printer port name i.e BT:StarMicronics.  Send null to use a printer connected via StarIOExtManager using the connect() function | String: "TCP:192.168.1.1" |
 | emulation* | Emulation type depending on the printer model | String: [Emulation](#emulation) |
 
-# Events
+### Events
+
 Listen to printer events as cases of the **starPrntData** event, cases are:
 
-## Printer Events
+#### Printer Events
+
 - Printer cover open: printerCoverOpen
 - Printer cover close: printerCoverClose
 - Printer impossible: printerImpossible
-- Printer online: printerOnline 
+- Printer online: printerOnline
 - Printer offline: printerOffline
 - Printer paper empty: printerPaperEmpty
 - Printer paper near empty: printerPaperNearEmpty
 - Printer paper ready: printerPaperReady
+- Barcode reader impossible: barcodeReaderImpossible
+- Barcode reader connect: barcodeReaderConnect
+- Barcode reader disconnect: barcodeReaderDisconnect
+- Barcode data receive: barcodeDataReceive
 
-## Cash Drawer Events
+#### Cash Drawer Events
+
 - Cash drawer open: cashDrawerOpen
 - Cash drawer close: cashDrawerClose
 
@@ -305,16 +346,16 @@ Listen to printer events as cases of the **starPrntData** event, cases are:
 window.addEventListener('starPrntData', function (e) {
   switch (e.dataType) {
     case 'printerCoverOpen':
-      console.log(data);
+      console.log(e.data);
       break;
     default:
-      console.log(data);
+      console.log(e.data);
       break;
   }
 });
 ```
 
-## PrintCommand Object 
+### PrintCommand Object
 
 | Property (Command) | Description |
 | ----------- | -------- |
@@ -363,12 +404,12 @@ window.addEventListener('starPrntData', function (e) {
 | rotation: string|Property to be used with the appendBitmap command. Choose the format of the return value defined in  [BitmapConverterRotation](#bitmapconverterrotation) Example: ```{appendBitmap:uri, rotation:'Left90'}```
 | openCashDrawer: number;| Sends a appendPeripheral command to the printer for channel number: Example: ```{openCashDrawer:1}``` |
 
+## PrintCommand Constants
 
-
-## PrintCommand Constants:
 Values for the PrintCommand properties. (Case and type sensitive)
 
-## Encoding 
+### Encoding
+
 | Encoding | Languages |
 | ----------- | -------- |
 | 'US-ASCII' |  English |
@@ -379,7 +420,8 @@ Values for the PrintCommand properties. (Case and type sensitive)
 | 'Big5' | Traditional Chinese |
 | 'UTF-8' | UFT8 |
 
-## CodePageType 
+### CodePageType
+
     CP737 = 'CP737',
     CP772 = 'CP772',
     CP774 = 'CP774',
@@ -421,7 +463,8 @@ Values for the PrintCommand properties. (Case and type sensitive)
     Blank = 'Blank'
 }
 
-## InternationalType
+### InternationalType
+
     UK = 'UK',
     USA = 'USA',
     France = 'France',
@@ -439,38 +482,38 @@ Values for the PrintCommand properties. (Case and type sensitive)
     Ireland = 'Ireland',
     Legal = 'Legal'
 
-## FontStyleType
+### FontStyleType
 
     Font-A (12 x 24 dots) / Specify 7 x 9 font (half dots) = 'A'
     Font-B (9 x 24 dots) / Specify 5 x 9 font (2P-1) = 'B'
 
-## CutPaperAction
+### CutPaperAction
 
     FullCut = 'FullCut',
     FullCutWithFeed = 'FullCutWithFeed',
     PartialCut = 'PartialCut',
     PartialCutWithFeed = 'PartialCutWithFeed'
-  
-## BlackMarkType
+
+### BlackMarkType
 
     Valid = 'Valid',
     Invalid = 'Invalid',
     ValidWithDetection = 'ValidWithDetection'
 
-## LogoSize
+### LogoSize
 
     Normal = 'Normal',
     DoubleWidth = 'DoubleWidth',
     DoubleHeight = 'DoubleHeight',
     DoubleWidthDoubleHeight = 'DoubleWidthDoubleHeight'
 
-## AlignmentPosition
+### AlignmentPosition
 
     Left = 'Left',
     Center = 'Center',
     Right = 'Right'
 
-## BarcodeSymbology
+### BarcodeSymbology
 
     Code128 = 'Code128',
     Code39 = 'Code39',
@@ -482,7 +525,7 @@ Values for the PrintCommand properties. (Case and type sensitive)
     UPCA = 'UPCA',
     UPCE = 'UPCE'
 
-## BarcodeWidth
+### BarcodeWidth
 
     Mode1 = 'Mode1',
     Mode2 = 'Mode2',
@@ -494,26 +537,26 @@ Values for the PrintCommand properties. (Case and type sensitive)
     Mode8 = 'Mode8',
     Mode9 = 'Mode9'
 
-## QrCodeModel
+### QrCodeModel
 
     No1 = 'No1',
     No2 = 'No2'
 
-## QrCodeLevel
+### QrCodeLevel
 
     H = 'H',
     L = 'L',
     M = 'M',
     Q = 'Q'
 
-## BitmapConverterRotation
+### BitmapConverterRotation
 
     Normal = 'Normal',
     Left90 = 'Left90',
     Right90 = 'Right90',
     Rotate180 = 'Rotate180'
 
-## Emulation
+### Emulation
 
 Source: Star SDK Documentation
 
@@ -539,5 +582,3 @@ Source: Star SDK Documentation
 | SM-S230i StarPRNT | StarPRNT |
 | SM-T300i/T300 StarPRNT  | StarPRNT |
 | SM-T400i StarPRNT  | StarPRNT |
-
-
