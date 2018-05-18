@@ -127,8 +127,9 @@ public class StarPRNT extends CordovaPlugin {
     } else if (action.equals("connect")){
         String portName = args.getString(0);
         String portSettings = getPortSettingsOption(portName, args.getString(1)); //get port settings using emulation parameter
+        Boolean hasBarcodeReader = args.getBoolean(2);
         _callbackContext = callbackContext;
-        this.connect(portName, portSettings,  callbackContext);
+        this.connect(portName, portSettings, hasBarcodeReader, callbackContext);
         return true;
     }else if (action.equals("disconnect")){
         this.disconnect(callbackContext);
