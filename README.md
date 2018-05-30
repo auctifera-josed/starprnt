@@ -2,6 +2,8 @@
 
 Cordova plugin for using [Star micronics printers](http://www.starmicronics.com/pages/All-Products) from a cordova, phonegap or Ionic application.
 
+## React Native Version ➜ [here](https://github.com/infoxicator/react-native-star-prnt)
+
 **Note:** This is based on the work from the guys at [InteractiveObject](https://github.com/InteractiveObject/StarIOPlugin)
 
 This plugin defines global starprnt object.
@@ -127,7 +129,7 @@ To print special characters using the print() function, select the correct [Enco
 - [printRasterReceipt(port, emulation, rasterObj, success, error)](#print-raster-receipt)
 - [printImage(port, emulation, imageObj, success, error)](#print-image)
 - [print(port, emulation, commandArray, success, error)](#print)
-- [connect(port, callback)](#connect)
+- [connect(port, emulation, hasBarcodeReader, callback)](#connect)
 - [disconnect(success, error)](#disconnect)
 - [openCashDrawer(port, emulation, success, error)](#open-cash-drawer)
 
