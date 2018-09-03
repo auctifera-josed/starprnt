@@ -128,6 +128,7 @@ To print special characters using the print() function, select the correct [Enco
 - [printRawText(port, emulation, printObj, success, error)](#print-raw-text)
 - [printRasterReceipt(port, emulation, rasterObj, success, error)](#print-raster-receipt)
 - [printImage(port, emulation, imageObj, success, error)](#print-image)
+- [printBase64Image(port, emulation, imageObj, success, error)](#print-base64-image)
 - [print(port, emulation, commandArray, success, error)](#print)
 - [connect(port, emulation, hasBarcodeReader, callback)](#connect)
 - [disconnect(success, error)](#disconnect)
@@ -255,6 +256,37 @@ The `printImage(port, emulation, imageObj, success, error)` prints a picture fro
 ```javascript
  var imageObj = {
     uri: 'file:///var/mobile/Containers/Data/Application/1B4B8C4C-6487-45AB-B950-0AC3633542F5/tmp/cdv_photo_002.jpg',
+    width: 576 // options: 384 = 2", 576 = 3", 832 = 4"
+    cutReceipt:true, // Defaults to true
+    openCashDrawer:true // Defaults to true
+};
+```
+
+### Print Base64 Image (Currently Android Only)
+
+The `printBase64Image(port, emulation, imageObj, success, error)` prints an image from a base64 string.  The base64 string is converted to a bitmap and sent to the printer.  This can be useful if you would like to print an image directly from an HTML element, HTML canvas or a database.  Here is an example for converting an html element to a base64 string using the html2canvas library (https://github.com/niklasvh/html2canvas).
+
+        getBase64Image = () => {		            
+            const imageElement = document.getElementById('receiptpaper');
+            var base64Image;
+			html2canvas(imageElement).then(function(canvas) {
+				var data = canvas.toDataURL();
+                base64Image=data.split('base64,')[1];
+			});
+            return base6Image;
+		}
+
+After you have a base64Image string you can then insert it as described below.
+
+| Paremeter | Description | Type/Example |
+| ----------- | -------- | ---------- |
+| port* | Printer port name i.e BT:StarMicronics.  Send null to use a printer connected via StarIOExtManager using the connect() function | String: "TCP:192.168.1.1" |
+| emulation* | Emulation type depending on the printer model | String: [Emulation](#emulation) |
+| imageObj* | Object containing the URI and printer options | Object: Example Below |
+
+```javascript
+ var imageObj = {
+    base64Image: 'put base64 image string here',
     width: 576 // options: 384 = 2", 576 = 3", 832 = 4"
     cutReceipt:true, // Defaults to true
     openCashDrawer:true // Defaults to true
