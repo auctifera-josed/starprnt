@@ -16,7 +16,9 @@ module.exports = {
     printRasterReceipt: function (port, emulation, printObj, success, error) {  //connects to printer and disconnects when done
         exec(success, error, "StarPRNT", "printRasterReceipt", [port, emulation, printObj]);
     },
-
+    printBase64Image: function (port, emulation, printObj, success, error) {  //connects to printer and disconnects when done
+        exec(success, error, "StarPRNT", "printBase64Image", [port, emulation, printObj]);
+    },
     printImage: function (port, emulation, printObj, success, error) {  //connects to printer and disconnects when done
         exec(success, error, "StarPRNT", "printRasterData", [port, emulation, printObj]);
     },
