@@ -37,6 +37,7 @@ import android.content.Context;
 import android.content.ContentResolver;
 import android.net.Uri;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -48,7 +49,7 @@ import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.Log;
-
+import android.util.Base64;
 
 
 
@@ -90,8 +91,16 @@ public class StarPRNT extends CordovaPlugin {
             String printObj = args.getString(2);
             this.printRasterReceipt(portName, portSettings, emulation, printObj, callbackContext);
             return true;
+        }else if (action.equals("printBase64Image")) {
+            String portName = args.getString(0);
+            String portSettings = getPortSettingsOption(portName, args.getString(1));
+            Emulation emulation = getEmulation(args.getString(1));
+            String printObj = args.getString(2);
+            this.printBase64Image(portName, portSettings, emulation, printObj, callbackContext);
+            return true;
 
-        }else if (action.equals("printRawText")){
+        }
+        else if (action.equals("printRawText")){
             String portName = args.getString(0);
             String portSettings = getPortSettingsOption(portName, args.getString(1));
             Emulation emulation = getEmulation(args.getString(1));
@@ -510,6 +519,52 @@ public class StarPRNT extends CordovaPlugin {
                             sendCommand(context, _portName, _portSettings, commands, _callbackContext);
                         }
 
+                    }
+                });
+    }
+    private void printBase64Image(String portName, String portSettings, Emulation emulation, String printObj, CallbackContext callbackContext) throws JSONException {
+
+        final Context context = this.cordova.getActivity();
+        final String _portName = portName;
+        final String _portSettings = portSettings;
+        final Emulation _emulation = emulation;
+        final JSONObject print = new JSONObject(printObj);
+        final int width = (print.has("width")) ? print.getInt("width") : 576;
+        final Boolean cutReceipt = (print.has("cutReceipt") ? print.getBoolean("cutReceipt"): true);
+        final Boolean openCashDrawer = (print.has("openCashDrawer")) ? print.getBoolean("openCashDrawer") : true;
+        final CallbackContext _callbackContext = callbackContext;
+        final String base64Image = print.getString("base64Image");
+
+        cordova.getThreadPool()
+                .execute(new Runnable() {
+                    public void run() {
+
+                        Typeface typeface = Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL);
+                        ICommandBuilder builder = StarIoExt.createCommandBuilder(_emulation);
+
+                        builder.beginDocument();
+                        byte[] base64converted=Base64.decode(base64Image,Base64.DEFAULT);                        
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(base64converted,0,base64converted.length);
+                        builder.appendBitmap(bitmap, false, width, true);
+
+                        if(cutReceipt){
+                            builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);
+                        }
+
+                        if(openCashDrawer){
+                            builder.appendPeripheral(ICommandBuilder.PeripheralChannel.No1); // Kick cash drawer No1
+                            builder.appendPeripheral(ICommandBuilder.PeripheralChannel.No2); // Kick cash drawer No2
+                        }
+
+                        builder.endDocument();
+                        byte[] commands = builder.getCommands();
+
+                        if(_portName == "null"){ // use StarIOExtManager
+                            sendCommand(commands, starIoExtManager.getPort(), _callbackContext);
+
+                        }else{//use StarIOPort
+                            sendCommand(context, _portName, _portSettings, commands, _callbackContext);
+                        }
                     }
                 });
     }
