@@ -181,6 +181,64 @@ static NSString *dataCallbackId = nil;
         }
     }];
 }
+-(void)printBase64Image:(CDVInvokedUrlCommand *)command {
+    [self.commandDelegate runInBackground:^{
+
+        NSStringEncoding encoding = NSWindowsCP1252StringEncoding;
+        NSString *portName = nil;
+        NSString *emulation = nil;
+        NSDictionary *printObj = nil;
+        
+  
+        if (command.arguments.count > 0) {
+            portName = [command.arguments objectAtIndex:0];
+            emulation = [command.arguments objectAtIndex:1];
+            printObj = [command.arguments objectAtIndex:2];
+        };
+        
+        NSString *portSettings = [self getPortSettingsOption:emulation];        
+        NSString *base64Image = [printObj valueForKey:@"base64Image"];        
+        CGFloat width = ([printObj valueForKey:@"width"]) ? [[printObj valueForKey:@"width"] floatValue] : 576;
+        BOOL cutReceipt = ([printObj valueForKey:@"cutReceipt"]) ? YES : NO;
+        BOOL openCashDrawer = ([printObj valueForKey:@"openCashDrawer"]) ? YES : NO;
+        StarIoExtEmulation Emulation = [self getEmulation:emulation];
+        
+        NSData *data = [[NSData alloc] initWithBase64EncodedString:base64Image options:0];
+        UIImage *image = [UIImage imageWithData: data];        
+        
+        ISCBBuilder *builder = [StarIoExt createCommandBuilder:Emulation];
+        
+        [builder beginDocument];        
+        
+        [builder appendBitmap:image diffusion:NO width:width bothScale:YES];
+        
+        if(cutReceipt == YES){
+            [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
+        }
+        
+        if(openCashDrawer == YES){
+            [builder appendPeripheral:SCBPeripheralChannelNo1];
+            [builder appendPeripheral:SCBPeripheralChannelNo2];
+        }
+        
+        [builder endDocument];
+
+        if(portName != nil && portName != (id)[NSNull null]){
+            
+                [self sendCommand:[builder.commands copy]
+                         portName:portName
+                     portSettings:portSettings
+                          timeout:10000
+                       callbackId:command.callbackId];
+            
+            }else{ //Use StarIOExtManager and send command to connected printer
+                
+            [self sendCommand:[builder.commands copy]
+                   callbackId:command.callbackId];
+                
+        }
+    }];
+}
 -(void)printRasterReceipt:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
         

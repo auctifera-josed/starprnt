@@ -262,21 +262,21 @@ The `printImage(port, emulation, imageObj, success, error)` prints a picture fro
 };
 ```
 
-### Print Base64 Image (Currently Android Only)
+### Print Base64 Image
 
 Note: The base64 option was originally left out because of performance concerns. The preferred option is using images stored in the phone's memory.  The base64 option should only be used if strictly necessary or when performance is not a concern.
 
 The `printBase64Image(port, emulation, imageObj, success, error)` prints an image from a base64 string.  The base64 string is converted to a bitmap and sent to the printer.  This can be useful if you would like to print an image directly from an HTML element, HTML canvas or a database.  Here is an example for converting an html element to a base64 string using the html2canvas library (https://github.com/niklasvh/html2canvas).
 
-        getBase64Image = () => {		            
-            const imageElement = document.getElementById('receiptpaper');
-            var base64Image;
-			html2canvas(imageElement).then(function(canvas) {
-				var data = canvas.toDataURL();
-                base64Image=data.split('base64,')[1];
-			});
-            return base6Image;
-		}
+    getBase64Image = () => {
+        const imageElement = document.getElementById('receiptpaper');
+        var base64Image;
+        (imageElement).then(function(canvas) {
+            var data = canvas.toDataURL();
+            base64Image=data.split('base64,')[1];
+        });
+        return base6Image;
+    }
 
 After you have a base64Image string you can then insert it as described below.
 

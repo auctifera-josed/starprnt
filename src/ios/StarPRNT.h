@@ -22,6 +22,7 @@
 - (void)portDiscovery:(CDVInvokedUrlCommand *)command;
 - (void)checkStatus:(CDVInvokedUrlCommand *)command;
 - (void)printRawText:(CDVInvokedUrlCommand *)command;
+- (void)printBase64Image:(CDVInvokedUrlCommand *)command;
 - (void)printRasterReceipt:(CDVInvokedUrlCommand *)command;
 - (void)printRasterData:(CDVInvokedUrlCommand *)command;
 - (void)print:(CDVInvokedUrlCommand *)command;
