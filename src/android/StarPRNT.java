@@ -530,6 +530,7 @@ public class StarPRNT extends CordovaPlugin {
         final Emulation _emulation = emulation;
         final JSONObject print = new JSONObject(printObj);
         final int width = (print.has("width")) ? print.getInt("width") : 576;
+        final Boolean appendBlackMark = (print.has("appendBlackMark") ? print.getBoolean("appendBlackMark"): true);
         final Boolean cutReceipt = (print.has("cutReceipt") ? print.getBoolean("cutReceipt"): true);
         final Boolean openCashDrawer = (print.has("openCashDrawer")) ? print.getBoolean("openCashDrawer") : true;
         final CallbackContext _callbackContext = callbackContext;
@@ -546,6 +547,10 @@ public class StarPRNT extends CordovaPlugin {
                         byte[] base64converted=Base64.decode(base64Image,Base64.DEFAULT);                        
                         Bitmap bitmap = BitmapFactory.decodeByteArray(base64converted,0,base64converted.length);
                         builder.appendBitmap(bitmap, false, width, true);
+
+                        if(appendBlackMark){
+                            builder.appendBlackMark(ICommandBuilder.BlackMarkType.ValidWithDetection);
+                        }
 
                         if(cutReceipt){
                             builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);
