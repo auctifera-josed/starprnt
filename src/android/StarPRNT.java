@@ -554,7 +554,7 @@ public class StarPRNT extends CordovaPlugin {
                         builder.appendBitmap(bitmap, false, width, true);
 
                         if(cutReceipt){
-                            builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);
+                            builder.appendCutPaper(CutPaperAction.PartialCut);
                         }
 
                         if(openCashDrawer){
