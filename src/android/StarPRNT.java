@@ -551,10 +551,10 @@ public class StarPRNT extends CordovaPlugin {
 
                         byte[] base64converted=Base64.decode(base64Image,Base64.DEFAULT);                        
                         Bitmap bitmap = BitmapFactory.decodeByteArray(base64converted,0,base64converted.length);
-                        builder.appendBitmap(bitmap, false, width, true);
+                        builder.appendBitmap(bitmap, false, width, false);
 
                         if(cutReceipt){
-                            builder.appendCutPaper(CutPaperAction.PartialCut);
+                            builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);
                         }
 
                         if(openCashDrawer){
