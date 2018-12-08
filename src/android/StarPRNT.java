@@ -544,13 +544,14 @@ public class StarPRNT extends CordovaPlugin {
                         ICommandBuilder builder = StarIoExt.createCommandBuilder(_emulation);
 
                         builder.beginDocument();
-                        byte[] base64converted=Base64.decode(base64Image,Base64.DEFAULT);                        
-                        Bitmap bitmap = BitmapFactory.decodeByteArray(base64converted,0,base64converted.length);
-                        builder.appendBitmap(bitmap, false, width, true);
-
+                        
                         if(appendBlackMark){
                             builder.appendBlackMark(ICommandBuilder.BlackMarkType.ValidWithDetection);
                         }
+
+                        byte[] base64converted=Base64.decode(base64Image,Base64.DEFAULT);                        
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(base64converted,0,base64converted.length);
+                        builder.appendBitmap(bitmap, false, width, true);
 
                         if(cutReceipt){
                             builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);
