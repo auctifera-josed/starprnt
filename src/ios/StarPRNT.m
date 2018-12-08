@@ -199,8 +199,9 @@ static NSString *dataCallbackId = nil;
         NSString *portSettings = [self getPortSettingsOption:emulation];        
         NSString *base64Image = [printObj valueForKey:@"base64Image"];        
         CGFloat width = ([printObj valueForKey:@"width"]) ? [[printObj valueForKey:@"width"] floatValue] : 576;
+        BOOL appendBlackMark = ([printObj valueForKey:@"appendBlackMark"]) ? YES : NO;
         BOOL cutReceipt = ([printObj valueForKey:@"cutReceipt"]) ? YES : NO;
-        BOOL openCashDrawer = ([printObj valueForKey:@"openCashDrawer"]) ? YES : NO;
+        BOOL openCashDrawer = ([printObj valueForKey:@"openCashDrawer"]) ? YES : NO;        
         StarIoExtEmulation Emulation = [self getEmulation:emulation];
         
         NSData *data = [[NSData alloc] initWithBase64EncodedString:base64Image options:0];
@@ -209,7 +210,11 @@ static NSString *dataCallbackId = nil;
         ISCBBuilder *builder = [StarIoExt createCommandBuilder:Emulation];
         
         [builder beginDocument];        
-        
+
+        if(appendBlackMark == YES){
+            [builder appendBlackMark:SCBBlackMarkTypeValidWithDetection];
+        }
+
         [builder appendBitmap:image diffusion:NO width:width bothScale:YES];
         
         if(cutReceipt == YES){
