@@ -546,7 +546,7 @@ public class StarPRNT extends CordovaPlugin {
                         builder.beginDocument();
                         
                         if(appendBlackMark){
-                            builder.appendBlackMark(ICommandBuilder.BlackMarkType.ValidWithDetection);
+                            builder.appendBlackMark(ICommandBuilder.BlackMarkType.Invalid);
                         }
 
                         byte[] base64converted=Base64.decode(base64Image,Base64.DEFAULT);                        
@@ -554,7 +554,7 @@ public class StarPRNT extends CordovaPlugin {
                         builder.appendBitmap(bitmap, false, width, true);
 
                         if(cutReceipt){
-                            builder.appendCutPaper(CutPaperAction.PartialCut);
+                            builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);
                         }
 
                         if(openCashDrawer){
