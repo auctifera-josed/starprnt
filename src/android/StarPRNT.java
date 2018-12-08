@@ -558,7 +558,7 @@ public class StarPRNT extends CordovaPlugin {
                         }
                         
                         if(appendBlackMark){
-                            builder.appendBlackMark(BlackMarkType.Invalid);
+                            builder.appendBlackMark(ICommandBuilder.BlackMarkType.Invalid);
                         }
 
                         if(openCashDrawer){
