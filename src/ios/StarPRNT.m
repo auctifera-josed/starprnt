@@ -212,7 +212,7 @@ static NSString *dataCallbackId = nil;
         [builder beginDocument];        
 
         if(appendBlackMark == YES){
-            [builder appendBlackMark:SCBBlackMarkTypeValidWithDetection];
+            [builder appendBlackMark:SCBBlackMarkTypeValid];
         }
 
         [builder appendBitmap:image diffusion:NO width:width bothScale:YES];
