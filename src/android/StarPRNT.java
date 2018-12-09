@@ -547,17 +547,16 @@ public class StarPRNT extends CordovaPlugin {
                         
                         builder.append("*ValidBM*".getBytes());
                         if(appendBlackMark){
-                            builder.appendBlackMark(ICommandBuilder.BlackMarkType.Valid);
+                            builder.appendBlackMark(ICommandBuilder.BlackMarkType.ValidWithDetection);
                         }
                         builder.append("*Bitmap*".getBytes());
-
                         byte[] base64converted=Base64.decode(base64Image,Base64.DEFAULT);                        
                         Bitmap bitmap = BitmapFactory.decodeByteArray(base64converted,0,base64converted.length);
                         builder.appendBitmap(bitmap, false, width, true);
 
                         builder.append("*ValidBM2*".getBytes());
                         if(appendBlackMark){
-                            builder.appendBlackMark(ICommandBuilder.BlackMarkType.Valid);
+                            builder.appendBlackMark(ICommandBuilder.BlackMarkType.ValidWithDetection);
                         }                        
                         builder.append("*Done*".getBytes());
 
