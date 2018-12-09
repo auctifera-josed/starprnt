@@ -555,16 +555,24 @@ public class StarPRNT extends CordovaPlugin {
                         Bitmap bitmap = BitmapFactory.decodeByteArray(base64converted,0,base64converted.length);
                         builder.appendBitmap(bitmap, false, width, true);
 
-                        builder.append("*Cutting*".getBytes());
+                        builder.append("*ValidBM2*".getBytes());
+                        if(appendBlackMark){
+                            builder.appendBlackMark(ICommandBuilder.BlackMarkType.Valid);
+                        }                        
+                        builder.append("*Done*".getBytes());
+
+                        /*builder.append("*Cutting*".getBytes());
                         if(cutReceipt){
                             builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);                            
                         }
                         builder.append("*Cut*".getBytes());
+                        */
                         
-                        if(appendBlackMark){
+                        /*if(appendBlackMark){
                             builder.appendBlackMark(ICommandBuilder.BlackMarkType.Invalid);
                         }
                         builder.append("*InvalidBM*".getBytes());
+                        */
 
                         if(openCashDrawer){
                             builder.appendPeripheral(ICommandBuilder.PeripheralChannel.No1); // Kick cash drawer No1
