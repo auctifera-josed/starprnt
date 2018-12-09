@@ -539,39 +539,20 @@ public class StarPRNT extends CordovaPlugin {
         cordova.getThreadPool()
                 .execute(new Runnable() {
                     public void run() {
-
-                        Typeface typeface = Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL);
                         ICommandBuilder builder = StarIoExt.createCommandBuilder(_emulation);
 
                         builder.beginDocument();
                         
-                        //builder.append("*ValidBM*".getBytes());
-                        if(appendBlackMark){
-                            builder.appendBlackMark(ICommandBuilder.BlackMarkType.ValidWithDetection);
-                        }
-                        //builder.append("*Bitmap*".getBytes());
-                        byte[] base64converted=Base64.decode(base64Image,Base64.DEFAULT);                        
-                        Bitmap bitmap = BitmapFactory.decodeByteArray(base64converted,0,base64converted.length);
-                        builder.appendBitmap(bitmap, false, width, true);
-
-                        //builder.append("*ValidBM2*".getBytes());
                         if(appendBlackMark){
                             builder.appendBlackMark(ICommandBuilder.BlackMarkType.ValidWithDetection);
                         }                        
-                        //builder.append("*Done*".getBytes());
+                        byte[] decoded=Base64.decode(base64Image,Base64.DEFAULT);                        
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(decoded,0,decoded.length);
+                        builder.appendBitmap(bitmap, false, width, true);
 
-                        /*builder.append("*Cutting*".getBytes());
                         if(cutReceipt){
                             builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);                            
                         }
-                        builder.append("*Cut*".getBytes());
-                        */
-                        
-                        /*if(appendBlackMark){
-                            builder.appendBlackMark(ICommandBuilder.BlackMarkType.Invalid);
-                        }
-                        builder.append("*InvalidBM*".getBytes());
-                        */
 
                         if(openCashDrawer){
                             builder.appendPeripheral(ICommandBuilder.PeripheralChannel.No1); // Kick cash drawer No1
