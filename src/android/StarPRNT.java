@@ -377,7 +377,16 @@ public class StarPRNT extends CordovaPlugin {
         final CallbackContext _callbackContext = callbackContext;
 
         if(starIoExtManager != null && starIoExtManager.getPort() != null){                             
-            starIoExtManager.disconnect();
+            starIoExtManager.disconnect(new IConnectionCallback() {
+                @Override
+                public void onConnected(ConnectResult connectResult) {
+                    // nothing
+                }
+                @Override
+                public void onDisconnected() {
+                    //nothing
+                }
+            })
         }
         starIoExtManager = new StarIoExtManager(hasBarcodeReader ? StarIoExtManager.Type.WithBarcodeReader : StarIoExtManager.Type.Standard, _portName, _portSettings, 10000, context);
         starIoExtManager.setListener(starIoExtManagerListener);
