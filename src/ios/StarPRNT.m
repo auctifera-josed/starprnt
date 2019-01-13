@@ -218,7 +218,11 @@ static NSString *dataCallbackId = nil;
         [builder appendBitmap:image diffusion:NO width:width bothScale:YES];
         
         if(cutReceipt == YES){
+            if(appendBlackMark == YES) {
+                [builder appendCutPaper:SCBCutPaperActionFullCutWithFeed]; //If black mark, we have to do a full cut because of the top margin
+            } else {
             [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
+            }
         }
         
         if(openCashDrawer == YES){

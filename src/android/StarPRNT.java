@@ -563,7 +563,11 @@ public class StarPRNT extends CordovaPlugin {
                         builder.appendBitmap(bitmap, false, width, true);
 
                         if(cutReceipt){
-                            builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);                            
+                            if(appendBlackMark){ //If black mark, then do a full cut as it has a smaller top margin
+                                builder.appendCutPaper(CutPaperAction.FullCutWithFeed);
+                            } else {
+                            builder.appendCutPaper(CutPaperAction.PartialCutWithFeed);
+                            }
                         }
 
                         if(openCashDrawer){
