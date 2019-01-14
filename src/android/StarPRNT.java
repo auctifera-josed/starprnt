@@ -137,8 +137,9 @@ public class StarPRNT extends CordovaPlugin {
         String portName = args.getString(0);
         String portSettings = getPortSettingsOption(portName, args.getString(1)); //get port settings using emulation parameter
         Boolean hasBarcodeReader = args.getBoolean(2);
+        Boolean onlyBarcodeReader = args.getBoolean(3);
         _callbackContext = callbackContext;
-        this.connect(portName, portSettings, hasBarcodeReader, callbackContext);
+        this.connect(portName, portSettings, hasBarcodeReader, onlyBarcodeReader, callbackContext);
         return true;
     }else if (action.equals("disconnect")){
         this.disconnect(callbackContext);
@@ -369,7 +370,7 @@ public class StarPRNT extends CordovaPlugin {
 
 
     }
-    private void connect(String portName, String portSettings, Boolean hasBarcodeReader, CallbackContext callbackContext) {
+    private void connect(String portName, String portSettings, Boolean hasBarcodeReader, Boolean onlyBarcodeReader, CallbackContext callbackContext) {
 
         final Context context = this.cordova.getActivity();
         final String _portName = portName;
@@ -388,7 +389,7 @@ public class StarPRNT extends CordovaPlugin {
                 }
             });
         }
-        starIoExtManager = new StarIoExtManager(hasBarcodeReader ? StarIoExtManager.Type.WithBarcodeReader : StarIoExtManager.Type.Standard, _portName, _portSettings, 10000, context);
+        starIoExtManager = new StarIoExtManager(onlyBarcodeReader ? StarIoExtManager.Type.OnlyBarcodeReader : hasBarcodeReader ? StarIoExtManager.Type.WithBarcodeReader : StarIoExtManager.Type.Standard, _portName, _portSettings, 10000, context);
         starIoExtManager.setListener(starIoExtManagerListener);
 
         cordova.getThreadPool()

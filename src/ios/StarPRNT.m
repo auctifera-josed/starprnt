@@ -27,16 +27,23 @@ static NSString *dataCallbackId = nil;
             NSString *printerPort = nil;
             NSString *emulation = @"StarLine";
             NSNumber *hasBarcodeReader = nil;
+            NSNumber *onlyBarcodeReader = nil;
         
         if (command.arguments.count > 0) {
             printerPort = [command.arguments objectAtIndex:0];
             emulation = [command.arguments objectAtIndex:1];
             hasBarcodeReader = [command.arguments objectAtIndex:2];
+            onlyBarcodeReader = [command.arguments objectAtIndex:3];
         }
         NSString *portSettings = [self getPortSettingsOption:emulation];
         
         if (printerPort != nil && printerPort != (id)[NSNull null]){
-            if ([hasBarcodeReader isEqual:@(YES)]) {
+            if ([onlyBarcodeReader isEqual:@(YES)]) {
+                _printerManager = [[StarIoExtManager alloc] initWithType:StarIoExtManagerTypeOnlyBarcodeReader
+                                                                portName:printerPort
+                                                            portSettings:portSettings
+                                                         ioTimeoutMillis:10000];
+            } else if ([hasBarcodeReader isEqual:@(YES)]) {
                 _printerManager = [[StarIoExtManager alloc] initWithType:StarIoExtManagerTypeWithBarcodeReader
                                                                 portName:printerPort
                                                             portSettings:portSettings
