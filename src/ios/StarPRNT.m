@@ -1167,6 +1167,7 @@ static NSString *dataCallbackId = nil;
     else if ([emulation isEqualToString:@"EscPos"]) return StarIoExtEmulationEscPos;
     else if ([emulation isEqualToString:@"EscPosMobile"]) return StarIoExtEmulationEscPosMobile;
     else if ([emulation isEqualToString:@"StarDotImpact"]) return StarIoExtEmulationStarDotImpact;
+    else if ([emulation isEqualToString:@"None"]) return StarIoExtEmulationNone;
     else return StarIoExtEmulationStarLine;
 }
 - (UIImage *)imageWithString:(NSString *)string font:(UIFont *)font width:(CGFloat)width {
