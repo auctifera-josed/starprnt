@@ -2,6 +2,17 @@
 
 Cordova plugin for using [Star micronics printers](http://www.starmicronics.com/pages/All-Products) from a cordova, phonegap or Ionic application.
 
+## As of November 10th 2021 be aware of the following when using this plugin with Capacitor for iOS:
+* You must use a lower version of Cocoapods than the latest release.  We suggest **1.10.0**, follow these steps to install:
+1. ```gem list --local | grep cocoapods```
+2. With this list uninstall EVERY Cocoapods gem by running ```sudo gem uninstall <GEM NAME>```
+3. Install Cocoapods at 1.10.0 ```sudo gem install cocoapods -v 1.10.0```
+* The gem ```xcodeproj``` which is a dependency of Cocoapods must be a version <= **1.19.0**
+* Follow these steps to get this plugin to build with Capacitor:
+1. Verify which versions of ```xcodeproj``` are installed in Ruby: ```gem list --local | grep xcodeproj```
+2. If there are versions >= **1.19.0** uninstall them: ```sudo gem uninstall xcodeproj -v x.xx.x```
+
+
 ## React Native Version ➜ [here](https://github.com/infoxicator/react-native-star-prnt)
 
 **Note:** This is based on the work from the guys at [InteractiveObject](https://github.com/InteractiveObject/StarIOPlugin)
