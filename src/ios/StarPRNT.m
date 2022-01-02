@@ -133,7 +133,6 @@ static NSString *dataCallbackId = nil;
         NSString *portName = nil;
         NSString *emulation = nil;
         NSDictionary *printObj = nil;
-        
   
         if (command.arguments.count > 0) {
             portName = [command.arguments objectAtIndex:0];
@@ -143,10 +142,9 @@ static NSString *dataCallbackId = nil;
         
         NSString *portSettings = [self getPortSettingsOption:emulation];
         NSString *text = [printObj valueForKey:@"text"];
-        BOOL cutReceipt = ([printObj valueForKey:@"cutReceipt"]) ? YES : NO;
-        BOOL openCashDrawer = ([printObj valueForKey:@"openCashDrawer"]) ? YES : NO;
+        BOOL cutReceipt = ([[printObj objectForKey:@"cutReceipt"]boolValue]) ? YES : NO;
+        BOOL openCashDrawer = ([[printObj objectForKey:@"openCashDrawer"]boolValue]) ? YES : NO;
         StarIoExtEmulation Emulation = [self getEmulation:emulation];
-        
         
         ISCBBuilder *builder = [StarIoExt createCommandBuilder:Emulation];
         
@@ -188,7 +186,6 @@ static NSString *dataCallbackId = nil;
         NSString *portName = nil;
         NSString *emulation = nil;
         NSDictionary *printObj = nil;
-        
   
         if (command.arguments.count > 0) {
             portName = [command.arguments objectAtIndex:0];
@@ -199,8 +196,8 @@ static NSString *dataCallbackId = nil;
         NSString *portSettings = [self getPortSettingsOption:emulation];        
         NSString *base64Image = [printObj valueForKey:@"base64Image"];        
         CGFloat width = ([printObj valueForKey:@"width"]) ? [[printObj valueForKey:@"width"] floatValue] : 576;
-        BOOL cutReceipt = ([printObj valueForKey:@"cutReceipt"]) ? YES : NO;
-        BOOL openCashDrawer = ([printObj valueForKey:@"openCashDrawer"]) ? YES : NO;
+        BOOL cutReceipt = ([[printObj objectForKey:@"cutReceipt"]boolValue]) ? YES : NO;
+        BOOL openCashDrawer = ([[printObj objectForKey:@"openCashDrawer"]boolValue]) ? YES : NO;
         StarIoExtEmulation Emulation = [self getEmulation:emulation];
         
         NSData *data = [[NSData alloc] initWithBase64EncodedString:base64Image options:0];
@@ -246,7 +243,6 @@ static NSString *dataCallbackId = nil;
         NSString *emulation = nil;
         NSDictionary *printObj = nil;
         
-        
         if (command.arguments.count > 0) {
             portName = [command.arguments objectAtIndex:0];
             emulation = [command.arguments objectAtIndex:1];
@@ -257,8 +253,8 @@ static NSString *dataCallbackId = nil;
         NSString *text = [printObj valueForKey:@"text"];
         NSInteger fontSize = ([printObj valueForKey:@"fontSize"]) ? [[printObj valueForKey:@"fontSize"] intValue] : 25;
         CGFloat paperWidth = ([printObj valueForKey:@"paperWidth"]) ? [[printObj valueForKey:@"paperWidth"] floatValue] : 576;
-        BOOL cutReceipt = ([printObj valueForKey:@"cutReceipt"]) ? YES : NO;
-        BOOL openCashDrawer = ([printObj valueForKey:@"openCashDrawer"]) ? YES : NO;
+        BOOL cutReceipt = ([[printObj objectForKey:@"cutReceipt"]boolValue]) ? YES : NO;
+        BOOL openCashDrawer = ([[printObj objectForKey:@"openCashDrawer"]boolValue]) ? YES : NO;
         StarIoExtEmulation Emulation = [self getEmulation:emulation];
         
         UIFont *font = [UIFont fontWithName:@"Menlo" size:fontSize];
@@ -269,7 +265,7 @@ static NSString *dataCallbackId = nil;
         
         [builder beginDocument];
         
-         [builder appendBitmap:image diffusion:NO];
+        [builder appendBitmap:image diffusion:NO];
         
         if(cutReceipt == YES){
             [builder appendCutPaper:SCBCutPaperActionPartialCutWithFeed];
@@ -295,7 +291,6 @@ static NSString *dataCallbackId = nil;
                    callbackId:command.callbackId];
             
         }
-
     }];
 }
 
@@ -315,8 +310,8 @@ static NSString *dataCallbackId = nil;
         NSString *portSettings = [self getPortSettingsOption:emulation];
         NSString *uri = [printObj valueForKey:@"uri"];
         CGFloat paperWidth = ([printObj valueForKey:@"paperWidth"]) ? [[printObj valueForKey:@"paperWidth"] floatValue] : 576;
-        BOOL cutReceipt = ([printObj valueForKey:@"cutReceipt"]) ? YES : NO;
-        BOOL openCashDrawer = ([printObj valueForKey:@"openCashDrawer"]) ? YES : NO;
+        BOOL cutReceipt = ([[printObj objectForKey:@"cutReceipt"]boolValue]) ? YES : NO;
+        BOOL openCashDrawer = ([[printObj objectForKey:@"openCashDrawer"]boolValue]) ? YES : NO;
         StarIoExtEmulation Emulation = [self getEmulation:emulation];
         
         NSURL *imageURL = [NSURL URLWithString:uri];
@@ -496,7 +491,6 @@ static NSString *dataCallbackId = nil;
         
         ISCBBuilder *builder = [StarIoExt createCommandBuilder:Emulation];
         
-        
         [builder appendData:[content dataUsingEncoding:NSWindowsCP1252StringEncoding]];
         
         [self sendCommand:[builder.commands copy] callbackId:command.callbackId];
@@ -542,7 +536,6 @@ static NSString *dataCallbackId = nil;
         NSStringEncoding encoding = NSWindowsCP1252StringEncoding;
         NSString *content = nil;
         ISCBBuilder *builder = [StarIoExt createCommandBuilder:StarIoExtEmulationStarLine];
-        
 
         if (command.arguments.count > 0) {
             content = [command.arguments objectAtIndex:0];
@@ -898,12 +891,12 @@ static NSString *dataCallbackId = nil;
         [self sendData:@"cashDrawerOpen" data:nil];
     }];
 }
+
 -(void)didCashDrawerClose {
     [self.commandDelegate runInBackground:^{
         [self sendData:@"cashDrawerClose" data:nil];
     }];
 }
-
 
 -(void)didBarcodeReaderImpossible {
     [self.commandDelegate runInBackground:^{
@@ -923,7 +916,7 @@ static NSString *dataCallbackId = nil;
     }];
 }
 
-- (void)didBarcodeDataReceive:(NSData *)data {
+-(void)didBarcodeDataReceive:(NSData *)data {
     [self.commandDelegate runInBackground:^{
         NSMutableString *text = [NSMutableString stringWithString:@""];
         const uint8_t *p = [data bytes];
