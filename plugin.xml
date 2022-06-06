@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-starprnt" version="2.1.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+<plugin id="cordova-plugin-starprnt" version="2.2.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
 	<name>StarPRNT</name>
 	<description>Plugin to use Star printers and connected drawer</description>
-	<author>Jose Angarita / Ruben Casas</author>
+	<author>Jose Angarita / Ruben Casas / Igor Santos</author>
 	<keywords>print,starmicronics,star printer</keywords>
 	<license>MIT</license>
 	<engines>
@@ -23,9 +23,17 @@
 		</config-file>
 		<config-file target="AndroidManifest.xml" parent="/*" />
 		<config-file target="AndroidManifest.xml" parent="/manifest">
-		<uses-permission android:name="android.permission.BLUETOOTH" />
+			<uses-permission android:name="android.permission.BLUETOOTH" />
+			<intent-filter>
+				<action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+				<action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" />
+			</intent-filter>
+			<meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/device_filter" />
+			<meta-data android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" android:resource="@xml/accessory_filter" />
 		</config-file>
-  	</platform>
+		<resource-file src="www/res/xml/device_filter.xml" target="app/src/main/res/xml/device_filter.xml" />
+		<resource-file src="www/res/xml/accessory_filter.xml" target="app/src/main/res/xml/accessory_filter.xml" />
+	</platform>
 	<platform name="ios">
 		<config-file target="config.xml" parent="/*">
 			<feature name="StarPRNT">

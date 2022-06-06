@@ -74,6 +74,15 @@ static NSString *dataCallbackId = nil;
         [self.commandDelegate sendPluginResult:result callbackId:dataCallbackId];
     }];
 }
+
+//no need to ask for further permissions in iOS, only in Android - so this method is a no-op here
+- (void)checkPermissions:(CDVInvokedUrlCommand *)command {
+    [self.commandDelegate runInBackground:^{
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Success!"];
+        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+    }];
+}
+
 - (void)checkStatus:(CDVInvokedUrlCommand *)command {
     //NSLog(@"Checking status");
     [self.commandDelegate runInBackground:^{
@@ -181,6 +190,7 @@ static NSString *dataCallbackId = nil;
         }
     }];
 }
+
 -(void)printBase64Image:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
 
@@ -239,6 +249,7 @@ static NSString *dataCallbackId = nil;
         }
     }];
 }
+
 -(void)printRasterReceipt:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
         

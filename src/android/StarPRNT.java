@@ -33,9 +33,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.ContentResolver;
-import android.net.Uri;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -43,6 +45,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.hardware.usb.UsbManager;
+import android.net.Uri;
 import android.provider.MediaStore;
 import android.telephony.IccOpenLogicalChannelResponse;
 import android.text.Layout;
@@ -52,16 +56,49 @@ import android.util.Log;
 import android.util.Base64;
 
 
-
-/**
- * This class echoes a string called from JavaScript.
- */
 public class StarPRNT extends CordovaPlugin {
 
 
     private CallbackContext _callbackContext = null;
     String strInterface;
     private StarIoExtManager starIoExtManager;
+
+    private static final String INTENT_ACTION_GRANT_USB = BuildConfig.APPLICATION_ID + ".GRANT_USB";
+    private enum UsbPermission { Unknown, Requested, Granted, Denied }
+    private UsbPermission usbPermission = UsbPermission.Unknown;
+    private final BroadcastReceiver broadcastReceiver;
+
+    public StarPRNT() {
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (INTENT_ACTION_GRANT_USB.equals(intent.getAction())) {
+//                    synchronized (this) {
+                    usbPermission = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false) ?
+                            UsbPermission.Granted :
+                            UsbPermission.Denied;
+
+//                    UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+//                    if(device != null){
+//                        //call method to set up device communication
+//                    }
+//                    }
+                }
+            }
+        };
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getActivity().registerReceiver(broadcastReceiver, new IntentFilter(INTENT_ACTION_GRANT_USB));
+    }
+
+    @Override
+    public void onPause() {
+        getActivity().unregisterReceiver(broadcastReceiver);
+        super.onPause();
+    }
 
 
     /**
@@ -80,18 +117,21 @@ public class StarPRNT extends CordovaPlugin {
             String portSettings = getPortSettingsOption(portName, args.getString(1));
             this.checkStatus(portName, portSettings, callbackContext);
             return true;
-        }else if (action.equals("portDiscovery")) {
+        } else if (action.equals("portDiscovery")) {
             String port = args.getString(0);
             this.portDiscovery(port, callbackContext);
             return true;
-        }else if (action.equals("printRasterReceipt")) {
+        } else if (action.equals("checkPermissions")) {
+            this.checkPermissions(callbackContext);
+            return true;
+        } else if (action.equals("printRasterReceipt")) {
             String portName = args.getString(0);
             String portSettings = getPortSettingsOption(portName, args.getString(1));
             Emulation emulation = getEmulation(args.getString(1));
             String printObj = args.getString(2);
             this.printRasterReceipt(portName, portSettings, emulation, printObj, callbackContext);
             return true;
-        }else if (action.equals("printBase64Image")) {
+        } else if (action.equals("printBase64Image")) {
             String portName = args.getString(0);
             String portSettings = getPortSettingsOption(portName, args.getString(1));
             Emulation emulation = getEmulation(args.getString(1));
@@ -99,8 +139,7 @@ public class StarPRNT extends CordovaPlugin {
             this.printBase64Image(portName, portSettings, emulation, printObj, callbackContext);
             return true;
 
-        }
-        else if (action.equals("printRawText")){
+        } else if (action.equals("printRawText")) {
             String portName = args.getString(0);
             String portSettings = getPortSettingsOption(portName, args.getString(1));
             Emulation emulation = getEmulation(args.getString(1));
@@ -108,43 +147,66 @@ public class StarPRNT extends CordovaPlugin {
 
             this.printRawText(portName, portSettings, emulation, printObj, callbackContext);
             return true;
-        }else if (action.equals("printRasterData")){
-        String portName = args.getString(0);
-        String portSettings = getPortSettingsOption(portName, args.getString(1));
-        Emulation emulation = getEmulation(args.getString(1));
-        String printObj = args.getString(2);
+        } else if (action.equals("printRasterData")) {
+            String portName = args.getString(0);
+            String portSettings = getPortSettingsOption(portName, args.getString(1));
+            Emulation emulation = getEmulation(args.getString(1));
+            String printObj = args.getString(2);
 
             try {
                 this.printRasterData(portName, portSettings, emulation, printObj, callbackContext);
             } catch (IOException e) {
-               // e.printStackTrace();
+                // e.printStackTrace();
             }
             return true;
-    }else if (action.equals("print")){
-        String portName = args.getString(0);
-        String portSettings = getPortSettingsOption(portName, args.getString(1));
-        Emulation emulation = getEmulation(args.getString(1));
-        JSONArray printCommands = args.getJSONArray(2);
-        this.print(portName, portSettings, emulation, printCommands, callbackContext);
-        return true;
-    }else if (action.equals("openCashDrawer")){
-        String portName = args.getString(0);
-        String portSettings = getPortSettingsOption(portName, args.getString(1));
-        Emulation emulation = getEmulation(args.getString(1));
-        this.openCashDrawer(portName, portSettings, emulation, callbackContext);
-        return true;
-    } else if (action.equals("connect")){
-        String portName = args.getString(0);
-        String portSettings = getPortSettingsOption(portName, args.getString(1)); //get port settings using emulation parameter
-        Boolean hasBarcodeReader = args.getBoolean(2);
-        _callbackContext = callbackContext;
-        this.connect(portName, portSettings, hasBarcodeReader, callbackContext);
-        return true;
-    }else if (action.equals("disconnect")){
-        this.disconnect(callbackContext);
-        return true;
+        } else if (action.equals("print")) {
+            String portName = args.getString(0);
+            String portSettings = getPortSettingsOption(portName, args.getString(1));
+            Emulation emulation = getEmulation(args.getString(1));
+            JSONArray printCommands = args.getJSONArray(2);
+            this.print(portName, portSettings, emulation, printCommands, callbackContext);
+            return true;
+        } else if (action.equals("openCashDrawer")) {
+            String portName = args.getString(0);
+            String portSettings = getPortSettingsOption(portName, args.getString(1));
+            Emulation emulation = getEmulation(args.getString(1));
+            this.openCashDrawer(portName, portSettings, emulation, callbackContext);
+            return true;
+        } else if (action.equals("connect")) {
+            String portName = args.getString(0);
+            String portSettings = getPortSettingsOption(portName, args.getString(1)); //get port settings using emulation parameter
+            Boolean hasBarcodeReader = args.getBoolean(2);
+            _callbackContext = callbackContext;
+            this.connect(portName, portSettings, hasBarcodeReader, callbackContext);
+            return true;
+        } else if (action.equals("disconnect")) {
+            this.disconnect(callbackContext);
+            return true;
         }
         return false;
+    }
+
+
+    public void requestPermission(CallbackContext callbackContext) {
+        UsbDevice device;
+        usbPermission = UsbPermission.Requested;
+        usbManager.requestPermission(device, permissionIntent);
+//        cordova.requestPermission(this, requestCode/*???*/, Manifest.permission.)
+        callbackContext.success("Permission requested");
+    }
+
+    public boolean checkPermissions(CallbackContext callbackContext) {
+        if (usbPermission == UsbPermission.Denied) {
+            callbackContext.error("denied");
+            return false;
+        } else if (usbPermission == UsbPermission.Unknown) {
+            callbackContext.error("unknown");
+            return false;
+        } else if (usbPermission == UsbPermission.Requested) {
+            callbackContext.error("requested");
+            return false;
+        }
+        callbackContext.success("granted");
     }
 
 
@@ -213,15 +275,17 @@ public class StarPRNT extends CordovaPlugin {
 
     private void portDiscovery(String strInterface, CallbackContext callbackContext) {
 
+        Log.d(TAG, "port-disc");
+
         final CallbackContext _callbackContext = callbackContext;
         final String _strInterface = strInterface;
 
         cordova.getThreadPool()
                 .execute(new Runnable() {
                     public void run() {
+                        boolean shouldContinue = true;
                         JSONArray result = new JSONArray();
                         try {
-
                             if (_strInterface.equals("LAN")) {
                                 result = getPortDiscovery("LAN");
                             } else if (_strInterface.equals("Bluetooth")) {
@@ -231,16 +295,19 @@ public class StarPRNT extends CordovaPlugin {
                             } else {
                                 result = getPortDiscovery("All");
                             }
-
                         } catch (StarIOPortException exception) {
                             _callbackContext.error(exception.getMessage());
-
+                        } catch (SecurityException exception) {
+                            shouldContinue = false;
+                            Log.d(TAG, "no-perms");
+                            _callbackContext.error("No permission granted to access USB device");
                         } catch (JSONException e) {
 
                         } finally {
-
-                            Log.d("Discovered ports", result.toString());
-                            _callbackContext.success(result);
+                            if (shouldContinue) {
+                                Log.d("Discovered ports", result.toString());
+                                _callbackContext.success(result);
+                            }
                         }
                     }
                 });

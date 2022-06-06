@@ -2,6 +2,8 @@
 
 Cordova plugin for using [Star micronics printers](http://www.starmicronics.com/pages/All-Products) from a cordova, phonegap or Ionic application.
 
+> This fork was made to solve [issue#58](https://github.com/auctifera-josed/starprnt/issues/58), where in some scenarios, Android apps would crash because of missing permissions.
+
 ## React Native Version ➜ [here](https://github.com/infoxicator/react-native-star-prnt)
 
 **Note:** This is based on the work from the guys at [InteractiveObject](https://github.com/InteractiveObject/StarIOPlugin)
