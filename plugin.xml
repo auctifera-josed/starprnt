@@ -24,6 +24,8 @@
 		<config-file target="AndroidManifest.xml" parent="/*" />
 		<config-file target="AndroidManifest.xml" parent="/manifest">
 			<uses-permission android:name="android.permission.BLUETOOTH" />
+		</config-file>
+		<config-file target="AndroidManifest.xml" parent="/manifest/application/activity">
 			<intent-filter>
 				<action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
 				<action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" />
@@ -31,8 +33,10 @@
 			<meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/device_filter" />
 			<meta-data android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" android:resource="@xml/accessory_filter" />
 		</config-file>
-		<resource-file src="www/res/xml/device_filter.xml" target="app/src/main/res/xml/device_filter.xml" />
-		<resource-file src="www/res/xml/accessory_filter.xml" target="app/src/main/res/xml/accessory_filter.xml" />
+
+		<!-- app/src/main/ get prepended to target -->
+		<resource-file src="src/android/xml/device_filter.xml" target="res/xml/device_filter.xml" />
+		<resource-file src="src/android/xml/accessory_filter.xml" target="res/xml/accessory_filter.xml" />
 	</platform>
 	<platform name="ios">
 		<config-file target="config.xml" parent="/*">

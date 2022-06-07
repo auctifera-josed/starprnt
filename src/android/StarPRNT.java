@@ -2,6 +2,8 @@ package starprnt.cordova;
 
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaWebView;
 
 
 import java.io.IOException;
@@ -45,6 +47,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -58,12 +61,14 @@ import android.util.Base64;
 
 public class StarPRNT extends CordovaPlugin {
 
+    private static String TAG = "cordova.starprnt";
 
+    private CordovaInterface cordova;
     private CallbackContext _callbackContext = null;
     String strInterface;
     private StarIoExtManager starIoExtManager;
 
-    private static final String INTENT_ACTION_GRANT_USB = BuildConfig.APPLICATION_ID + ".GRANT_USB";
+    private String INTENT_ACTION_GRANT_USB;
     private enum UsbPermission { Unknown, Requested, Granted, Denied }
     private UsbPermission usbPermission = UsbPermission.Unknown;
     private final BroadcastReceiver broadcastReceiver;
@@ -89,15 +94,22 @@ public class StarPRNT extends CordovaPlugin {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        getActivity().registerReceiver(broadcastReceiver, new IntentFilter(INTENT_ACTION_GRANT_USB));
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+        super.initialize(cordova, webView);
+        this.cordova = cordova;
+        this.INTENT_ACTION_GRANT_USB = cordova.getActivity().getPackageName() + ".GRANT_USB";
+   }
+
+    @Override
+    public void onResume(boolean multitasking) {
+        super.onResume(multitasking);
+        this.cordova.getActivity().registerReceiver(broadcastReceiver, new IntentFilter(INTENT_ACTION_GRANT_USB));
     }
 
     @Override
-    public void onPause() {
-        getActivity().unregisterReceiver(broadcastReceiver);
-        super.onPause();
+    public void onPause(boolean multitasking) {
+        this.cordova.getActivity().unregisterReceiver(broadcastReceiver);
+        super.onPause(multitasking);
     }
 
 
@@ -188,23 +200,23 @@ public class StarPRNT extends CordovaPlugin {
 
 
     public void requestPermission(CallbackContext callbackContext) {
-        UsbDevice device;
-        usbPermission = UsbPermission.Requested;
-        usbManager.requestPermission(device, permissionIntent);
+//        UsbDevice device;
+//        usbPermission = UsbPermission.Requested;
+//        usbManager.requestPermission(device, permissionIntent);
 //        cordova.requestPermission(this, requestCode/*???*/, Manifest.permission.)
-        callbackContext.success("Permission requested");
+//        callbackContext.success("Permission requested");
     }
 
-    public boolean checkPermissions(CallbackContext callbackContext) {
+    public void checkPermissions(CallbackContext callbackContext) {
         if (usbPermission == UsbPermission.Denied) {
             callbackContext.error("denied");
-            return false;
+            return;
         } else if (usbPermission == UsbPermission.Unknown) {
             callbackContext.error("unknown");
-            return false;
+            return;
         } else if (usbPermission == UsbPermission.Requested) {
             callbackContext.error("requested");
-            return false;
+            return;
         }
         callbackContext.success("granted");
     }
