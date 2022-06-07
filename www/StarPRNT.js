@@ -48,10 +48,6 @@ module.exports = {
         }, 'StarPRNT', 'connect', [printerPort, emulation, !!hasBarcodeReader]);
     },
 
-    checkPermissions: function(success, error) {
-
-    },
-
 // iOS only functions (Deprecated, use Super function print to access all the CommandBuilderInterface/ISCBBuilderInterface methods )
 
     printReceipt: function (receipt, success, error, receiptId, alignment, international, font) {

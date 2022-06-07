@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- https://www.star-m.jp/products/s_print/sdk/starprnt_sdk/manual/android_java/en/configure_application.html#device-filter-xmlaccessory-filter-xml -->
 <resources>
     <usb-accessory model="Star TSP143IV-UE" manufacturer="STAR"/>
 </resources>

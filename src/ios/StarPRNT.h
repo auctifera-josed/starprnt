@@ -20,7 +20,6 @@
 @property (nonatomic) StarIoExtManager *printerManager;
 
 - (void)portDiscovery:(CDVInvokedUrlCommand *)command;
-- (void)checkPermissions:(CDVInvokedUrlCommand *)command;
 - (void)checkStatus:(CDVInvokedUrlCommand *)command;
 - (void)printRawText:(CDVInvokedUrlCommand *)command;
 - (void)printBase64Image:(CDVInvokedUrlCommand *)command;
