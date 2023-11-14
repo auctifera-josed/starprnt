@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-starprnt" version="2.3.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+<plugin id="cordova-plugin-starprnt" version="2.4.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
 	<name>StarPRNT</name>
 	<description>Plugin to use Star printers and connected drawer</description>
 	<author>Jose Angarita / Ruben Casas</author>
@@ -7,13 +7,14 @@
 	<license>MIT</license>
 	<engines>
     	<engine name="cordova" version=">=3.4.0"/>
+		<engine name="cordova-android" version=">=12.0.0" />
   	</engines>
 	<js-module name="StarPRNT" src="www/StarPRNT.js">
 		<clobbers target="starprnt" />
 	</js-module>
 	<platform name="android">
 		<source-file src="src/android/StarPRNT.java" target-dir="src/starprnt/cordova" />
-		<!-- Using StarPRNT_Android_SDK_V5_5_0  -->
+		<!-- Using StarPRNT_Android_SDK_V5_17_0  -->
 		<source-file src="src/android/lib/StarIOPort3.1.jar" target-dir="libs" />
 		<source-file src="src/android/lib/starioextension.jar" target-dir="libs" />
 		<config-file target="res/xml/config.xml" parent="/*">
@@ -21,9 +22,10 @@
 			<param name="android-package" value="starprnt.cordova.StarPRNT" />
 		</feature>
 		</config-file>
-		<config-file target="AndroidManifest.xml" parent="/*" />
 		<config-file target="AndroidManifest.xml" parent="/manifest">
-			<uses-permission android:name="android.permission.BLUETOOTH" />
+			<uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+			<uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+			<uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
 		</config-file>
 		<config-file target="AndroidManifest.xml" parent="/manifest/application/activity">
 			<intent-filter>

@@ -4,22 +4,22 @@ import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaWebView;
-
+import org.apache.cordova.PermissionHelper;
+import org.apache.cordova.PluginResult;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.Locale;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 
 import com.starmicronics.stario.PortInfo;
 import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
 import com.starmicronics.stario.StarPrinterStatus;
+import com.starmicronics.starioextension.ConnectionCallback;
 import com.starmicronics.starioextension.IConnectionCallback;
 import com.starmicronics.starioextension.StarIoExt;
 import com.starmicronics.starioextension.StarIoExt.Emulation;
@@ -29,18 +29,18 @@ import com.starmicronics.starioextension.ICommandBuilder.CodePageType;
 import com.starmicronics.starioextension.StarIoExtManager;
 import com.starmicronics.starioextension.StarIoExtManagerListener;
 
-
-import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.Manifest;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -51,8 +51,8 @@ import android.graphics.Typeface;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
-import android.telephony.IccOpenLogicalChannelResponse;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
@@ -64,6 +64,8 @@ public class StarPRNT extends CordovaPlugin {
 
     private static String TAG = "cordova.starprnt";
     private static int STAR_VENDOR_ID = 1305;
+
+    private static final int REQUEST_BLUETOOTH_PERMISSIONS = 1;
 
     private CordovaInterface cordova;
     private CallbackContext _callbackContext = null;
@@ -80,7 +82,49 @@ public class StarPRNT extends CordovaPlugin {
     private UsbManager usbManager;
     private IntentFilter intentFilter;
     private PendingIntent pendingIntent;
-    
+
+     private boolean hasPermissions(String[] permissions) {
+        for (String permission: permissions) {
+            if (!PermissionHelper.hasPermission(this, permission)) {
+                Log.d(TAG, "missing permission "+permission);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean checkAndRequestPermissions() {
+        ArrayList<String> permissions = new ArrayList<>();
+
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            permissions.add(Manifest.permission.BLUETOOTH_SCAN);
+            permissions.add(Manifest.permission.BLUETOOTH_CONNECT);
+        } else {
+            // Android API 30 or lower
+            permissions.add(Manifest.permission.BLUETOOTH);
+        }
+
+        String[] permissionsStrings = permissions.toArray(new String[0]);
+        Log.d(TAG, "checking permissions: "+String.join(", ", permissionsStrings));
+        if(!hasPermissions(permissionsStrings)) {
+            Log.d(TAG, "requesting permissions");
+            PermissionHelper.requestPermissions(this, REQUEST_BLUETOOTH_PERMISSIONS, permissionsStrings);
+            return false;
+        }
+        return true;
+    }
+
+    public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
+        for (int r : grantResults) {
+            Log.d(TAG, "Permission results: " + r);
+            if (r == PackageManager.PERMISSION_DENIED) {
+                this._callbackContext.error("Necessary bluetooth permissions denied");
+                return;
+            }
+        }
+        execute(_action, _args, _callbackContext);
+    }
+
     @Override
 	public void initialize(CordovaInterface cordova, CordovaWebView webView) {
 		super.initialize(cordova, webView);
@@ -104,14 +148,14 @@ public class StarPRNT extends CordovaPlugin {
                                 _callbackContext.error(e.getMessage());
                             }
                         } else {
-                            _callbackContext.error("No permssion granted to access USB device.");
+                            _callbackContext.error("No permission granted to access USB device.");
                         }
                     }
                 }
             }
         };
         this.usbManager = (UsbManager) cordova.getActivity().getSystemService(Context.USB_SERVICE);
-        this.pendingIntent = PendingIntent.getBroadcast(cordova.getContext(), 0, new Intent(INTENT_ACTION_GRANT_USB), 0);
+        this.pendingIntent = PendingIntent.getBroadcast(cordova.getContext(), 0, new Intent(INTENT_ACTION_GRANT_USB), PendingIntent.FLAG_MUTABLE);
         intentFilter = new IntentFilter(INTENT_ACTION_GRANT_USB);
         cordova.getActivity().registerReceiver(this.broadcastReceiver, intentFilter);
     }
@@ -133,12 +177,19 @@ public class StarPRNT extends CordovaPlugin {
      * Executes the request and returns PluginResult.
      *
      * @param action            The action to execute.
-     * @param args              JSONArry of arguments for the plugin.
+     * @param args              JSONArray of arguments for the plugin.
      * @param callbackContext   The callback id used when calling back into JavaScript.
      * @return                  True if the action was valid, false otherwise.
      */
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        this._action = action;
+        this._args = args;
+        this._callbackContext = callbackContext;
+        if (!checkAndRequestPermissions()) {
+              return true;
+        }
+
         for (UsbDevice device : usbManager.getDeviceList().values()) {
             if (device.getVendorId() == STAR_VENDOR_ID && !usbManager.hasPermission(device)) {
                 this._action = action;
@@ -310,7 +361,7 @@ public class StarPRNT extends CordovaPlugin {
                         } catch (SecurityException exception) {
                             shouldContinue = false;
                             Log.d(TAG, "no-perms");
-                            _callbackContext.error("No permission granted to access USB device");
+                            _callbackContext.error("Missing permissions");
                         } catch (JSONException e) {
 
                         } finally {
@@ -454,7 +505,7 @@ public class StarPRNT extends CordovaPlugin {
         final CallbackContext _callbackContext = callbackContext;
 
         if(starIoExtManager != null && starIoExtManager.getPort() != null){
-            starIoExtManager.disconnect(null);
+            starIoExtManager.disconnect((ConnectionCallback) null);
         }
         starIoExtManager = new StarIoExtManager(hasBarcodeReader ? StarIoExtManager.Type.WithBarcodeReader : StarIoExtManager.Type.Standard, _portName, _portSettings, 10000, context);
         starIoExtManager.setListener(starIoExtManagerListener);
