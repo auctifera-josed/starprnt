@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- https://www.star-m.jp/products/s_print/sdk/starprnt_sdk/manual/android_java/en/configure_application.html#device-filter-xmlaccessory-filter-xml -->
+<resources>
+    <usb-device class="255" subclass="66" protocol="1" />
+    <usb-device vendor-id="1305" product-id="0001" />   <!--IFBD-HU05/06, IFBD-HU07/08 - printerClass-->
+    <usb-device vendor-id="1305" product-id="0002" />   <!--IFBD-HU05/06, IFBD-HU07/08 - vendorClass-->
+    <usb-device vendor-id="1305" product-id="0003" />   <!--TSP100U/ECO/IIIU/IV  - printerClass-->
+    <usb-device vendor-id="1305" product-id="0004" />   <!--TSP100U/ECO       - vendorClass-->
+    <usb-device vendor-id="1305" product-id="0005" />   <!--TSP100GT/IIIU     - printerClass-->
+    <usb-device vendor-id="1305" product-id="0006" />   <!--TSP100GT          - vendorClass-->
+    <usb-device vendor-id="1305" product-id="0009" />   <!--FVP10             - printerClass-->
+    <usb-device vendor-id="1305" product-id="0010" />   <!--FVP10             - vendorClass-->
+    <usb-device vendor-id="1305" product-id="0011" />   <!--BSC10             - printerClass-->
+    <usb-device vendor-id="1305" product-id="0012" />   <!--BSC10             - vendorClass-->
+    <usb-device vendor-id="1305" product-id="0017" />   <!--BSC10BR           - printerClass-->
+    <usb-device vendor-id="1305" product-id="0067" />   <!--SM-S210i/230i     - mobile printer-->
+    <usb-device vendor-id="1305" product-id="0023" />   <!--mPOP              - printerClass-->
+    <usb-device vendor-id="1305" product-id="0071" />   <!--mC-Print3         - printerClass-->
+    <usb-device vendor-id="1305" product-id="0073" />   <!--mC-Print2         - printerClass-->
+    <usb-device vendor-id="1305" product-id="0075" />   <!--SK1-211/221/V211  - printerClass-->
+    <usb-device vendor-id="1305" product-id="0077" />   <!--SK1-311/321/V311  - printerClass-->
+</resources>

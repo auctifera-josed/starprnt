@@ -1,6 +1,6 @@
 {
     "name": "cordova-plugin-starprnt",
-    "version": "2.2.0",
+    "version": "2.3.0",
     "description": "StarPRNT Cordova Plugin for Star Micronics Bluetooth/LAN printers",
     "types": "./types/index.d.ts",
     "cordova": {
